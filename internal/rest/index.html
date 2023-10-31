@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mimedump</title>
+<base href="/">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='-2'%20y='14'%3E📮%3C/text%3E%3C/svg%3E" type="image/svg+xml">
+<style type="text/css">
+body {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+}
+.hidden {
+    display: none !important;
+}
+.menu-list {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.menu-item {
+    position: relative;
+    padding: 0;
+    margin: 0;
+    height: 100%
+}
+#layout,
+#nav,
+#list,
+#main {
+    margin: 0;
+    padding: 0;
+}
+#nav {
+    width: 100%;
+    height: 40px;
+    position: relative;
+    background: rgb(37, 42, 58);
+    text-align: center;
+}
+#nav .menu {
+    background: transparent;
+    border: none;
+    text-align: left;
+}
+#nav .menu-link:hover,
+#nav .menu-link:focus {
+    background: rgb(55, 60, 90);
+}
+#nav .menu-link {
+    color: #fff;
+    margin-left: 0.5em;
+    display: block;
+    text-decoration: none;
+    white-space: nowrap;
+}
+#nav .menu-heading {
+    border-bottom: none;
+    font-size:110%;
+    color: rgb(75, 113, 151);
+}
+.mail-item {
+    padding: 0.9em 1em;
+    border-bottom: 1px solid #ddd;
+    border-left: 6px solid transparent;
+    cursor: pointer;
+}
+.mail-item:focus {
+    background: #eee;
+    cursor: auto;
+}
+.mail-subject {
+    margin: 0;
+}
+.mail-from,
+.mail-to {
+    overflow: hidden;
+    text-transform: uppercase;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #999;
+    margin: 0;
+}
+.mail-from::before {
+    color: red;
+    content: "↗";
+}
+.mail-to::before {
+    color: green;
+    content: "↘";
+}
+.mail-desc {
+    font-size: 80%;
+    margin: 0.4em 0;
+}
+.mail-content-header,
+.mail-content-body,
+.mail-content-footer {
+    padding: 1em 2em;
+}
+.mail-content-header {
+    border-bottom: 1px solid #ddd;
+}
+.mail-content-title {
+    margin: 0.5em 0 0;
+}
+.mail-content-subtitle {
+    font-size: 1em;
+    margin: 0;
+    font-weight: normal;
+}
+.mail-content-controls {
+    margin-top: 2em;
+    text-align: right;
+}
+#layout {
+    padding-left: 500px;
+    position: relative;
+}
+#nav,
+#list {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    overflow: auto;
+}
+#nav {
+    margin-left:-500px;
+    width:150px;
+    height: 100%;
+}
+.nav-inner {
+    display: block;
+    padding: 2em 0;
+}
+#mail-count {
+    color: #4b7197;
+}
+#list {
+    margin-left: -350px;
+    width: 350px;
+    height: 100%;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+#main {
+    position: static;
+    margin: 0;
+    padding: 0;
+    right: 0;
+    bottom: 0;
+    left: 150px;
+    overflow: auto;
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    flex-direction: column;
+}
+#preview-html,
+#preview-plain,
+#preview-headers {
+    margin: 0;
+    padding: 0;
+    border: none;
+    flex-grow: 1;
+}
+</style>
+</head>
+<body onload="onLoad()">
+<div id="layout" class="content">
+    <div id="nav">
+        <div class="nav-inner">
+            <div class="menu">
+                <ul class="menu-list">
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" onclick="window.location.reload()">📥 Inbox <span id="mail-count">(0)</span></a>
+                    </li>
+                    <li class="menu-item">
+                        <input id="upload" type="file" accept=".eml,message/rfc822" onchange="uploadMail(this.files[0])" style="display:none"/><a href="#"  class="menu-link" onclick="document.getElementById('upload').click()">🆙 Upload .eml</a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" onclick="deleteAllMails()">❌ Delete all</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="list" onscrollend="infiniteScroll()"></div>
+    <div id="main">
+        <div class="mail-content-header">
+            <div>
+                <h3 id="preview-title" class="mail-content-title"></h3>
+                <p id="preview-subtitle" class="mail-content-subtitle"></p>
+            </div>
+            <div class="mail-content-controls">
+                <button onclick="showHtml()">HTML</button>
+                <button onclick="showPlain()">Plain</button>
+                <button onclick="showHeaders()">Headers</button>
+            </div>
+        </div>
+        <iframe id="preview-html" referrerpolicy="no-referrer" csp="default-src 'self'; img-src * data:; style-src 'unsafe-inline';" sandbox></iframe>
+        <pre id="preview-plain" class="hidden"></pre>
+        <pre id="preview-headers" class="hidden"></pre>
+    </div>
+</div>
+<script type="text/javascript">
+const limit = 10;
+var lastId = 0;
+var currentEml = null;
+function onLoad() {
+    document.getElementById("list").scrollTop = 0;
+    loadMails().then(result => document.querySelector("#list > div:first-child")?.focus());
+}
+function previewMail(id) {
+    const previewHtml = document.getElementById("preview-html");
+    previewHtml.classList.remove("hidden");
+    previewHtml.removeAttribute("title");
+    previewHtml.removeAttribute("srcdoc");
+    const previewPlain = document.getElementById("preview-plain");
+    previewPlain.classList.add("hidden");
+    previewPlain.textContent = null;
+    const previewHeaders = document.getElementById("preview-headers");
+    previewHeaders.classList.add("hidden");
+    previewHeaders.textContent = null;
+    const title = document.getElementById("preview-title");
+    title.textContent = null;
+    const subtitle = document.getElementById("preview-subtitle");
+    subtitle.textContent = null
+    fetch("/mail/" + id)
+        .then(response => response.text())
+        .then(eml => {
+            const parsed = jsmimeparser.parseMail(eml);
+            const inlined = inlineImages(parsed.body.html, parsed.attachments);
+            previewHtml.setAttribute("title", parsed.subject);
+            previewHtml.setAttribute("srcdoc", inlined);
+            previewPlain.textContent = parsed.body.text;
+            const headerDelim = eml.search(/(\r?\n){2}/g);
+            previewHeaders.textContent = eml.substring(0, headerDelim);
+            title.textContent = parsed.subject;
+            subtitle.textContent = "From " + [parsed.from?.email, parsed.date?.toISOString()].join(" at ");
+        });
+}
+function showHtml() {
+    document.getElementById("preview-html").classList.remove("hidden");
+    document.getElementById("preview-plain").classList.add("hidden");
+    document.getElementById("preview-headers").classList.add("hidden");
+}
+function showPlain() {
+    document.getElementById("preview-html").classList.add("hidden");
+    document.getElementById("preview-plain").classList.remove("hidden");
+    document.getElementById("preview-headers").classList.add("hidden");
+}
+function showHeaders() {
+    document.getElementById("preview-html").classList.add("hidden");
+    document.getElementById("preview-plain").classList.add("hidden");
+    document.getElementById("preview-headers").classList.remove("hidden");
+}
+function loadMails() {
+    return fetch("/mails/" + lastId + "?limit=" + limit)
+        .then(response => response.json())
+        .then(result => {
+            for (mail of result.data) {
+                lastId = mail.id;
+                addEmailToList(mail.id, mail.from, mail.to, mail.subject);
+            }
+            document.getElementById("mail-count").textContent = `(${result.total})`;
+            return result;
+        });
+}
+function infiniteScroll() {
+    const list = document.getElementById("list")
+    if (list.scrollTop + list.clientHeight >= list.scrollHeight) {
+        loadMails().then(result => {
+            if (!result.data || result.data.length < limit) {
+                list.onscrollend = null;
+            }
+        });
+    }
+}
+function addEmailToList(id, from, to, subject) {
+    const outer = document.createElement("div");
+    outer.id = id;
+    outer.tabIndex = 8192;
+    outer.className = "mail-item";
+    outer.onfocus = () => previewMail(id);
+
+    const info = document.createElement("div");
+
+    const emailFromText = JSON.parse(from).join("; ");
+    const emailFrom = document.createElement("h5");
+    emailFrom.className = "mail-from";
+    emailFrom.textContent = emailFromText;
+    emailFrom.title = emailFromText;
+
+    const emailToText = JSON.parse(to).join("; ");
+    const emailTo = document.createElement("h5");
+    emailTo.className = "mail-to";
+    emailTo.textContent = emailToText;
+    emailTo.title = emailToText;
+
+    const emailSubject = document.createElement("h4");
+    emailSubject.className = "mail-subject"
+    emailSubject.textContent = subject;
+
+    info.appendChild(emailFrom);
+    info.appendChild(emailTo);
+    info.appendChild(emailSubject);
+    outer.appendChild(info);
+    document.getElementById("list").appendChild(outer);
+}
+function inlineImages(htmlString, attachments) {
+    const inlineMap = new Map();
+    for (att of attachments) {
+        if (att.contentId && att.contentDisposition === "inline"
+            && ["image/gif", "image/jpeg", "image/png"].includes(att.contentType)) {
+            inlineMap.set(att.contentId, att);
+        }
+    }
+    const html = document.createElement("html");
+    html.innerHTML = htmlString;
+    for (img of html.getElementsByTagName("img")) {
+        if (img.src && img.src.length > 4 && img.src.substring(0, 4).toLowerCase() === "cid:") {
+            const cid = "<" + img.src.substring(4) + ">";
+            const att = inlineMap.get(cid);
+            if (att && att.content) {
+                const b64 = btoa(String.fromCharCode.apply(null, att.content));
+                img.setAttribute("src", "data:" + att.contentType + ";base64," + b64);
+            }
+        }
+    }
+    return html.outerHTML;
+}
+function uploadMail(eml) {
+    const formData = new FormData();
+    formData.append("eml", eml);
+    fetch("/upload", { method: "POST", body: formData })
+        .then(response => window.location.reload(),
+            err => alert("Upload failed: " + err));
+}
+function deleteAllMails() {
+    if (confirm("Delete all mails?")) {
+        fetch("/mails", { method: "DELETE" })
+            .then(response => window.location.reload(),
+                err => alert("Delete all mails failed: " + err));
+    }
+}
+</script>
+<script type="text/javascript">
+/*!
+jsmimeparser v3.0.1
+Copyright (c) 2013 Joshua Cranmer
+Licensed under the MIT License.
+https://github.com/ProtonMail/jsmimeparser/blob/main/LICENSE
+*/var jsmimeparser;(()=>{"use strict";var t={d:(e,r)=>{for(var s in r)t.o(r,s)&&!t.o(e,s)&&Object.defineProperty(e,s,{enumerable:!0,get:r[s]})},o:(t,e)=>Object.prototype.hasOwnProperty.call(t,e),r:t=>{"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})}},e={};function r(t){return[t.replace(/=([0-9A-F][0-9A-F]|[ \t]*(\r\n|[\r\n]|$))/gi,(function(t,e){return 0==e.trim().length?"":String.fromCharCode(parseInt(e,16))})),""]}function s(t,e){let r=t.replace(/[^A-Za-z0-9+/=]/g,"");r=r.replace(/=+([A-Za-z0-9+/])/g,"$1");let s=r.length%4;return t=0!=s&&e?r.slice(-s):"",r=r.substring(0,r.length-s),r=r.replace(/(====)+$/g,""),[atob(r),t]}function n(t){for(var e=new Uint8Array(t.length),r=0;r<t.length;r++)e[r]=t.charCodeAt(r);return e}function i(t){var e="";for(let r=0;r<t.length;r+=100)e+=String.fromCharCode.apply(void 0,t.subarray(r,r+100));return e}t.r(e),t.d(e,{parseMail:()=>Q});const a=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];class o{constructor(){this.collectInput="",this.decodeString=d}decode(t,e={}){let r=e.stream;return t&&(this.collectInput+=i(t)),r?"":this.decodeString(this.collectInput)}}class h extends o{constructor(){super(),this.decodeString=u}}function c(t,e){switch(t.toLowerCase()){case"utf-7":return new o;case"utf-7-imap":return new h;case"cp932":return new TextDecoder("shift_jis",e);default:return new TextDecoder(t,e)}}function l(t){const e=n(atob(t));let r="";for(let t=0,s=e.length;t<s;)r+=String.fromCharCode(e[t++]<<8|e[t++]);return r}const d=t=>t.replace(/\+([A-Za-z0-9/]*)-?/gi,((t,e)=>""===e?"+":l(e))),u=t=>t.replace(/&([^-]*)-/g,((t,e)=>""===e?"&":l(e.replace(/,/g,"/"))));var p=new Map,f=new Map,_=new Map;function g(t,e,r){var s=t.toLowerCase();p.set(s,e),f.set(s,r),_.set(s,t)}function y(t){let e=this;return t.reduce((function(t,r){return t.concat(e.parseAddressingHeader(r,!0))}),[])}function m(t){Array.isArray(t)||(t=[t]),this.addAddresses(t)}function D(t,e,r){return this.parseParameterHeader(t[0],e,r)}function b(t){return this.decodeRFC2047Words(t[0])}function w(t){this.addUnstructured(t)}function v(t){return this.decodeRFC2047Words(t[0])}function E(t){this.addUnstructured(t)}function T(t){return this.parseDateHeader(t[0])}function A(t){this.addDate(t)}function C(t){let e,r=/<[^>]*>/g,s=[];for(;null!==(e=r.exec(t));)s.push(e[0]);return s.join(" ")}g("Bcc",y,m),g("Cc",y,m),g("From",y,m),g("Reply-To",y,m),g("Resent-Bcc",y,m),g("Resent-Cc",y,m),g("Resent-From",y,m),g("Resent-Reply-To",y,m),g("Resent-Sender",y,m),g("Resent-To",y,m),g("Sender",y,m),g("To",y,m),g("Approved",y,m),g("Disposition-Notification-To",y,m),g("Delivered-To",y,m),g("Return-Receipt-To",y,m),g("Mail-Reply-To",y,m),g("Mail-Followup-To",y,m),p.set("Content-Type",(function(t){let e=D.call(this,t,!1,!1),r=e.preSemi.split("/");2!=r.length&&(e=new Map,r=["text","plain"]);let s=r[0].toLowerCase(),n=r[1].toLowerCase(),i=s+"/"+n,a=new Map;return a.mediatype=s,a.subtype=n,a.type=i,e.forEach((function(t,e){a.set(e.toLowerCase(),t)})),a})),g("Comments",b,w),g("Keywords",b,w),g("Subject",b,w),g("MIME-Version",b,w),g("Content-Description",b,w),g("User-Agent",b,w),g("Date",T,A),g("Resent-Date",T,A),g("Expires",T,A),g("Injection-Date",T,A),g("NNTP-Posting-Date",T,A),g("Message-ID",v,E),g("Resent-Message-ID",v,E),p.set("Content-Transfer-Encoding",(function(t){return t[0].toLowerCase()})),f.set("Content-Transfer-Encoding",w),p.set("References",C),p.set("In-Reply-To",C);const P={};function x(t){return(t=(t=(t=(t=(t=t.replace(/[\xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/g," ")).replace(/[\u034F\u17B4\u17B5\u180B-\u180D\uFE00-\uFE0F]/g,"")).replace(/\uDB40[\uDD00-\uDDEF]/g,"")).replace(/(?![\t\n\r])[\0-\x1F\x7F-\x9F]/g,"")).replace(/(?:[\xAD\u061C\u06DD\u070F\u08E2\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u206F\uFEFF\uFFF9-\uFFFB]|\uD804[\uDCBD\uDCCD]|\uD80D[\uDC30-\uDC38]|\uD82F[\uDCA0-\uDCA3]|\uD834[\uDD73-\uDD7A]|\uDB40[\uDC01\uDC20-\uDC7F])/g," ")).replace(/\u2800/g," ")}function O(t,e,r){let s,n=[];function i(t){this.token=t.replace(/\\(.?)/g,"$1")}i.prototype.toString=function(){return this.token};let a,o=0,h=t.length;for(let c=0;c<h;c++){let h=t[c];if("\\"==h){c++;continue}if(void 0!==a){if(h==a&&'"'==h){let e=t.slice(s+1,c);r.rfc2047&&(e=H(e)),n.push(new i(e)),a=void 0,s=void 0}else h==a&&"]"==h&&(n.push(new i(t.slice(s,c+1))),a=void 0,s=void 0);continue}if(r.rfc2047&&"="==h&&c+1<t.length&&"?"==t[c+1]){let e=/([ \t\r\n]*=\?[^?]*\?[BbQq]\?[^?]*\?=)+/.exec(t.slice(c));if(null!==e){void 0!==s&&(n.push(new i(t.slice(s,c))),s=void 0);let r=e[0].length,a=H(t.slice(c,c+r));n.push({toString:()=>a}),c+=r-1;continue}}let l=!1,d=!1,u=!1;" \t\r\n".includes(h)?l=!0:0==o&&e.includes(h)?(l=!0,u=!0):r.qstring&&'"'==h?(l=!0,d=!0,a=h):r.dliteral&&"["==h?(l=!0,d=!0,a="]"):r.comments&&"("==h?(o++,1==o?(l=!0,u=!0):d=!0):r.comments&&")"==h?(o>0&&o--,0==o?(l=!0,u=!0):d=!0):d=!0,l&&void 0!==s&&(n.push(new i(t.slice(s,c))),s=void 0),u&&n.push(h),d&&void 0===s&&(s=c)}return void 0!==s&&('"'==a?n.push(new i(t.slice(s+1))):n.push(new i(t.slice(s)))),n}function H(t){let e,i="";function a(t,a){let o=t.split("?");if(5!=o.length||"="!=o[4])return!1;let h,l=o[1].split("*",1)[0],d=o[2],u=o[3];if("B"==d||"b"==d){if(/[^ A-Za-z0-9+/=]/.exec(u))return!1;h=s(u,!1)[0]}else{if("Q"!=d&&"q"!=d)return!1;h=r(u.replace(/_/g," "))[0]}let p=h;h=n(h);var f="";if(l!=i&&e&&(f+=e.decode(),e=null),i=l,!e)try{e=new c(l,{fatal:!1})}catch(t){return!1}let _;return _=a||"ISO-2022-JP"==l.toUpperCase()&&p.endsWith("(B")?{stream:!1}:{stream:!0},f+e.decode(h,_)}let o=t.split(/(=\?[^?]*\?[BQbq]\?[^?]*\?=)/),h=-1;for(let t=0;t<o.length;t++)"=?"==o[t].substring(0,2)&&(h=t);for(let t=0;t<o.length;t++){if("=?"==o[t].substring(0,2)){let e=a(o[t],t==h);if(!1!==e){o[t]=e;continue}}else if(/^[ \t\r\n]*$/.exec(o[t])){o[t]="";continue}i="",e&&(o[t]=e.decode()+o[t],e=null)}return o.join("")}function S(t){let e=t.indexOf("'"),r=e>=0?t.indexOf("'",e+1):-1,s=e>=0?t.substring(0,e):"",i=n(t=t.substring(Math.max(e,r)+1));return new c(s,{fatal:!0}).decode(i,{stream:!1})}var R={UT:"+0000",GMT:"+0000",EST:"-0500",EDT:"-0400",CST:"-0600",CDT:"-0500",MST:"-0700",MDT:"-0600",PST:"-0800",PDT:"-0700",AST:"-0400",NST:"-0330",BST:"+0100",MET:"+0100",EET:"+0200",JST:"+0900"},M=new Map,B=new Set;for(let t of p)F(t[0],t[1]),B.add(t[0].toLowerCase());function F(t,e){let r=t.toLowerCase();if(B.has(r))throw new Error("Cannot override header: "+t);M.set(r,e),_.has(r)||_.set(r,t)}P.addStructuredDecoder=F,P.convert8BitHeader=function(t,e){if(/[\x80-\xff]/.exec(t)){let r=n(t),s=new c("utf-8",{fatal:e&&!e.toLowerCase().startsWith("utf")});try{t=s.decode(r)}catch(s){try{t=new c(e,{fatal:!1}).decode(r)}catch(t){}}}return t},P.decodeRFC2047Words=H,P.getHeaderTokens=O,P.parseAddressingHeader=function(t,e){void 0===e&&(e=!0);let r=[],s=[],n="",i="",a="",o="",h="",c=!1,l=!1,d=!1,u=!1,p=!1,f=!1,_="";function g(t,e){let r=e.substring(0,e.lastIndexOf("@"));if(null!==/[ !()<>[\]:;@\\,"]/.exec(r)&&(e='"'+r.replace(/([\\"])/g,"\\$1")+'"'+e.substring(e.lastIndexOf("@"))),""===(t=t.replace(/\s+/g," ").trim())&&""!==_){let e=" "===_[0]?2:1;t=_.substr(e,_.length-e-1)}""===t&&""===e||s.push({name:t,email:e}),n=a=o=_="",c=l=d=u=!1}for(let y of O(t,":,;<>@",{qstring:!0,comments:!0,dliteral:!0,rfc2047:e})){if(":"===y)i=n,n="",a="",s.length>0&&(r=r.concat(s)),s=[];else if("<"!==y||u)if(">"!==y||u)if("("===y)l=!0,p=d,d||(d=""!==n&&" "!==n.substr(-1)),h=d?" (":"(",f=!1;else{if(")"===y){l=!1,h+=")",_=h,c?d=p:(n+=h,d=!0),f=!0;continue}if("@"===y){if(u)continue;c||(o=a,n="",a="",c=!0),o+="@"}else if(","===y)g(n,o),u=!1;else{if(";"!==y){y=x(y.toString());let t=y;d&&y&&"."!=y[0]&&(t=" "+t),l?h+=t:c?o+=t:(u||(n+=t),f?(a+=y,f=!1):a+=t),d=y&&"."!=y[0];continue}g(n,o),""===i?r=r.concat(s):r.push({name:i,group:s}),s=[],i=""}}else c=!1,_="",u=!0;else c?(o.length>0&&(n=o),a=o=""):c=!0;d=!1}return g(n,o),""!==i&&(r.push({name:i,group:s}),s=[]),r.concat(s)},P.parseDateHeader=function(t){let e=O(t,",:",{}).map((t=>t.toString()));if(e.length>1&&","===e[1]&&(e=e.slice(2)),e.length<8)return new Date(NaN);let r=parseInt(e[0]),s=parseInt(e[2]),n=parseInt(e[3]),i=parseInt(e[5]),o=parseInt(e[7]),h=a.indexOf(e[1].slice(0,3));h<0&&(h=NaN),s<100&&(s+=s<50?2e3:1900);let c=e[8];c in R&&(c=R[c]);let l=/^([+-])(\d\d)(\d\d)$/.exec(c);null===l&&(l=["+0000","+","00","00"]);let d=60*parseInt(l[2])+parseInt(l[3]);return"-"==l[1]&&(d=-d),new Date(Date.UTC(s,h,r,n,i,o)-60*d*1e3)},P.parseParameterHeader=function(t,e,r){var s=t.indexOf(";");let n,i;s<0?(n=t,i=""):(n=t.substring(0,s),i=t.substring(s)),n=n.trim().split(/[ \t\r\n]/)[0];let a={qstring:!0,rfc2047:e},o="",h=!0,c=[];for(let t of O(i,";=",a))";"===t?(""==o||h||c.push([o,""]),o="",h=!0):"="===t?h=!1:h&&""==o?o=t.toString():h||""==o?h&&(o=""):(t=t.toString(),r&&o.endsWith("*")&&(t=t.replace(/%([0-9A-Fa-f]{2})/g,(function(t,e){return String.fromCharCode(parseInt(e,16))}))),c.push([o,t]),o="");""==o||h||c.push([o,""]);var l=new Map,d=new Map,u=new Map;for(let t of c){let e=t[0],r=t[1],s=e.indexOf("*");if(-1==s)l.has(e)||l.set(e,r);else if(s==e.length-1)e=e.substring(0,s),d.has(e)||d.set(e,r);else{let t=e.substring(0,s),n=u.get(t);if(u.has(t)&&!n.valid)continue;u.has(t)||(n=[],n.valid=!0,n.hasCharset=void 0,u.set(t,n));let i="*"==e[e.length-1],a=e.substring(s+1,e.length-(i?1:0));if("0"==a)n.hasCharset=i;else if(0==a.length||"0"==a[0]&&"0"!=a||!/^[0-9]+$/.test(a)){n.valid=!1;continue}if(a=parseInt(a,10),void 0!==n[a]){n.valid=!1;continue}n[a]=r}}var p=new Map;for(let t of l)p.set(t[0],t[1]);if(r){for(let t of u){let e=t[0],r=t[1];if(void 0===r.hasCharset)continue;let s=!0;for(var f=0;s&&f<r.length;f++)void 0===r[f]&&(s=!1);let n=r.slice(0,f).join("");if(r.hasCharset)try{n=S(n)}catch(t){continue}p.set(e,n)}for(let t of d)try{p.set(t[0],S(t[1]))}catch(t){}}return p.preSemi=n,p},P.parseStructuredHeader=function(t,e){if(("string"==typeof e||e instanceof String)&&(e=[e]),!Array.isArray(e))throw new TypeError("Header value is not an array: "+e);let r=t.toLowerCase();if(M.has(r))return M.get(r).call(P,e);throw new Error("Unknown structured header: "+t)};const I=Object.freeze(P);function N(t,e){let r=t.split(/(?:\r\n|\n)(?![ \t])|\r(?![ \t\n])/);r.length>0&&"From "==r[0].substring(0,5)&&(r.shift(),t=0==r.length?"":t.substring(t.indexOf(r[0])));let s=new Map;for(let t=0;t<r.length;t++){let n,i,a=r[t].indexOf(":");a>=0?(n=r[t].substring(0,a),i=r[t].substring(a+1).trim(),e.stripcontinuations&&(i=i.replace(/[\r\n]/g,""))):(n=r[t],i=""),n=n.trim().toLowerCase(),""!=n&&(s.has(n)?s.get(n).push(i):s.set(n,[i]))}this._rawHeaders=s,this._cachedHeaders=new Map,Object.defineProperty(this,"rawHeaderText",{get:()=>t}),Object.defineProperty(this,"size",{get(){return this._rawHeaders.size}}),Object.defineProperty(this,"charset",{get(){return this._charset},set(t){this._charset=t,this._cachedHeaders.clear()}}),this._charset="charset"in e?e.charset:null,Object.defineProperty(this,"contentType",{configurable:!0,get(){return this.get("Content-Type")}})}N.prototype.getRawHeader=function(t){return this._rawHeaders.get(t.toLowerCase())},N.prototype.get=function(t){if(t=t.toLowerCase(),this._cachedHeaders.has(t))return this._cachedHeaders.get(t);let e=this._rawHeaders.get(t);if(void 0===e)return e;let r,s=this.charset;e=e.map((function(t){return I.convert8BitHeader(t,s)}));try{r=I.parseStructuredHeader(t,e)}catch(t){r=e.map((function(t){return I.decodeRFC2047Words(t)}))}return this._cachedHeaders.set(t,r),r},N.prototype.has=function(t){return this._rawHeaders.has(t.toLowerCase())};var j="function"==typeof Symbol?Symbol.iterator:"@@iterator";function L(t,e){if(this._emitter=t,this._options={pruneat:"",bodyformat:"nodecode",strformat:"binarystring",stripcontinuations:!0,charset:"","force-charset":!1,onerror:()=>{}},e)for(var r in e)this._options[r]=e[r];if("function"!=typeof this._options.onerror)throw new Error("onerror callback must be a function");this.resetParser()}function U(t){let e=t.lastIndexOf("\r",t.length-2),r=t.lastIndexOf("\n"),s=r>e?r:e;return[t.substring(0,s+1),t.substring(s+1)]}N.prototype[j]=function*(){for(let t of this.keys())yield[t,this.get(t)]},N.prototype.forEach=function(t,e){for(let[r,s]of this)t.call(e,s,r,this)},N.prototype.entries=N.prototype[Symbol.iterator],N.prototype.keys=function*(){for(let e of this._rawHeaders.keys())yield _.get(e)||(t=e,t.replace(/\b[a-z]/g,(function(t){return t.toUpperCase()})));var t},N.prototype.values=function*(){for(let[,t]of this)yield t},L.prototype.resetParser=function(){this._state=W,this._holdData="",this._headerData="",this._triggeredCall=!1,this._splitRegex=this._handleSplit=void 0,this._subparser=this._subPartNum=void 0,this._savedBuffer="",this._convertData=void 0,this._decoder=void 0},L.prototype.deliverData=function(t){this._holdData&&(t=this._holdData+t,this._holdData=""),t.length>0&&([t,this._holdData]=U(t)),0!=t.length&&(this._triggeredCall||(this._callEmitter("startMessage"),this._triggeredCall=!0),this._dispatchData("",t,!0))},L.prototype.deliverEOF=function(){this._triggeredCall||(this._triggeredCall=!0,this._callEmitter("startMessage")),this._holdData&&this._dispatchData("",this._holdData,!0),this._dispatchEOF(""),this._callEmitter("endMessage")},L.prototype._callEmitter=function(t,...e){if(this._emitter&&t in this._emitter){if(e.length>0&&this._willIgnorePart(e[0]))return;try{this._emitter[t].apply(this._emitter,e)}catch(t){this._options.onerror(t)}}},L.prototype._willIgnorePart=function(t){if(this._options.pruneat){let e=this._options.pruneat;if(t.substr(0,e.length)!=e||e.length<t.length&&!"$.".includes(t[e.length]))return!0}return!1};var W=1;L.prototype._dispatchData=function(t,e,r){if(this._state==W){this._headerData+=e;let r=/(?:^(?:\r\n|[\r\n]))|(\r\n|[\r\n])\1/.exec(this._headerData);if(null==r)return;{let s=this._headerData.substr(0,r.index);e=this._headerData.substring(r.index+r[0].length),this._headerData=s,this._headers=this._parseHeaders(),this._callEmitter("startPart",t,this._headers),this._startBody(t)}}if(r&&this._splitRegex){let r=this._splitRegex.exec(e);if(r){let s=r.index,n=r[0].length;return s>0&&this._dispatchData(t,e.substr(0,s),!1),this._handleSplit(t,r),void((e=e.substring(s+n)).length>0&&this._dispatchData(t,e,!0))}}if(2==this._state);else if(3==this._state){if("none"==this._options.bodyformat||this._willIgnorePart(t))return;const{coerced:r,raw:s}=this._applyDataConversion(e,this._options.strformat);this._callEmitter("deliverPartData",t,r,s)}else if(4==this._state){const{coerced:t}=this._applyDataConversion(e,"binarystring");e.length>0&&this._subparser._dispatchData(this._subPartNum,t,!0)}},L.prototype._applyDataConversion=function(t,e){return this._convertData&&(t=this._savedBuffer+t,[t,this._savedBuffer]=this._convertData(t,!0)),{coerced:this._coerceData(t,e,!1),raw:t instanceof Uint8Array?t:n(t)}},L.prototype._coerceData=function(t,e,r){if("string"==typeof t){if("binarystring"==e)return t;var s=n(t);return"unicode"==e?this._coerceData(s,"unicode",r):s}if("binarystring"==e)return i(t);if("unicode"==e)return this._decoder?this._decoder.decode(t,{stream:r}):t;throw new Error("Invalid type: "+e)},L.prototype._dispatchEOF=function(t){if(this._state==W)this._headers=this._parseHeaders(),this._callEmitter("startPart",t,this._headers);else if(4==this._state)this._convertData&&this._savedBuffer&&this._subparser._dispatchData(this._subPartNum,this._convertData(this._savedBuffer,!1)[0],!0),this._subparser._dispatchEOF(this._subPartNum),this._subparser=null;else if(this._convertData&&this._savedBuffer){let[e]=this._convertData(this._savedBuffer,!1);e=this._coerceData(e,this._options.strformat,!1),e.length>0&&this._callEmitter("deliverPartData",t,e)}this._callEmitter("endPart",t)},L.prototype._parseHeaders=function(){let t=new N(this._headerData,this._options),e=t.get("Content-Type");void 0===e?(e=I.parseStructuredHeader("Content-Type",this._defaultContentType||"text/plain"),Object.defineProperty(t,"contentType",{get:()=>e})):Object.defineProperty(t,"contentType",{configurable:!1});let r="";return r=this._options["force-charset"]?this._options.charset:e.has("charset")?e.get("charset"):this._options.charset,t.charset=r,this._charset=r,t},L.prototype._startBody=function(t){let e=this._headers.contentType;if("raw"!=this._options.bodyformat||t!=this._options.pruneat){if("multipart"==e.mediatype){if(!e.has("boundary"))return void(this._state=2);this._splitRegex=new RegExp("(\r\n|[\r\n]|^)--"+e.get("boundary").replace(/[\\^$*+?.()|{}[\]]/g,"\\$&")+"(--)?[ \t]*(?:\r\n|[\r\n]|$)"),this._handleSplit=this._whenMultipart,this._subparser=new L(this._emitter,this._options),"digest"==e.subtype&&(this._subparser._defaultContentType="message/rfc822"),this._state=2,this._convertData=function(t,e){let r=t.length;e&&("\n"==t.charAt(r-1)&&r--,r>=0&&"\r"==t.charAt(r-1)&&r--);let s=U(t.substring(0,r));return[s[0],s[1]+t.substring(r)]}}else if("message/rfc822"==e.type||"message/global"==e.type||"message/news"==e.type){this._state=4,this._subPartNum=t+"$",this._subparser=new L(this._emitter,this._options);let e=this._extractHeader("content-transfer-encoding","");e in z&&(this._convertData=z[e])}else if(this._state=3,"decode"==this._options.bodyformat){let t=this._extractHeader("content-transfer-encoding","");t in z&&(this._convertData=z[t])}if("unicode"==this._options.strformat&&"text"==e.mediatype){if(this._decoder=null,""!==this._charset)try{this._decoder=new c(this._charset)}catch(t){console.error(t)}this._decoder||(this._decoder={decode:t=>L.prototype._coerceData(t,"binarystring",!0)})}else this._decoder=null}else this._state=3},L.prototype._whenMultipart=function(t,e){if(""!=t&&(t+="."),this._subPartNum){if(""!=this._savedBuffer&&""===e[1]){let t=this._savedBuffer.length-1;"\n"==this._savedBuffer[t]&&t--,t>=0&&"\r"==this._savedBuffer[t]&&t--,this._savedBuffer=this._savedBuffer.substring(0,t+1)}""!=this._savedBuffer&&this._subparser._dispatchData(this._subPartNum,this._savedBuffer,!0),this._subparser._dispatchEOF(this._subPartNum)}else this._count=1;this._savedBuffer="",null==e[2]?(this._subparser.resetParser(),this._state=4,this._subPartNum=t+this._count,this._count+=1):(this._splitRegex=null,this._state=2)},L.prototype._extractHeader=function(t,e){return t=t.toLowerCase(),this._headers.has(t)?this._headers.get(t):I.parseStructuredHeader(t,[e])};var z={};z["quoted-printable"]=r,z.base64=s;const $=L;var k={getAttachmentName(t){if(!t||!t.headers)return"";if(t.headers["content-disposition"]){let e=Z.getParameter(t.headers["content-disposition"][0],"filename");if(e)return e}if(t.headers["content-type"]){let e=Z.getParameter(t.headers["content-type"][0],"name");if(e)return e}return""},isAttachment(t){if(!t)return!1;let e=t.contentType||"text/plain";if(0===e.search(/^multipart\//i))return!1;let r="";return Array.isArray(t.headers["content-disposition"])&&t.headers["content-disposition"].length>0&&(r=t.headers["content-disposition"][0]),0===r.search(/^attachment/i)||-1===e.search(/^text\/plain|^text\/html|^text\/enriched/i)},startMessage(){this.mimeTree={partName:"",contentType:"message/rfc822",parts:[],size:0,headers:{},rawHeaderText:"",allAttachments:[],bodyParts:{text:[],html:[]},isEncrypted:!1},this.partsPath=[this.mimeTree],this.options=this.options||{}},endMessage(){this.mimeMsg=null,0!=this.mimeTree.parts.length&&(this.options.getMimePart?this.mimeTree.parts[0].partName==this.options.getMimePart&&(this.mimeMsg=this.mimeTree.parts[0],this.mimeMsg.bodyAsTypedArray=n(this.mimeMsg.body)):this.mimeMsg=this.mimeTree)},startPart(t,e){let r=new TextEncoder,s=e.contentType&&e.contentType.type?e.contentType.type:"text/plain",n=e.rawHeaderText,a={};for(let[t,s]of e._rawHeaders){let e=Array.isArray(s)?s:[s];a[t]=e.map((t=>i(r.encode(t))))}let o=this.partsPath[this.partsPath.length-1],h="1"+(""!==t?".":"")+t;"1"==h&&(o.rawHeaderText=n,n=n.split(/\n(?![ \t])/).filter((t=>t.toLowerCase().startsWith("content-"))).join("\n").trim(),o.headers=a,a=Object.fromEntries(Object.entries(a).filter((t=>t[0].startsWith("content-"))))),a["content-type"]||(a["content-type"]=["text/plain"]);let c={partName:h,rawBody:null,body:"",headers:a,rawHeaderText:n,contentType:s,size:0,parts:[],isEncrypted:!1};o.parts.push(c),this.partsPath.push(c)},endPart(t){let e=!1,r=this.partsPath[this.partsPath.length-1],s=r.body.length;if(r.size+=s,this.isAttachment(r)){r.fileName=this.getAttachmentName(r);const t=r.headers["content-disposition"]&&r.headers["content-disposition"][0],s=r.headers["content-id"]&&r.headers["content-id"][0];r.contentDisposition=t?t.split(";").shift():void 0,r.contentId=s||void 0,this.options.includeAttachments?this.mimeTree.allAttachments.push(r):e=!0}else if(r.rawBody)switch(delete r.rawBody,r.contentType||"text/plain"){case"text/html":this.mimeTree.bodyParts.html.push(r.body);break;case"text/plain":this.mimeTree.bodyParts.text.push(r.body)}e&&(delete r.body,delete r.rawBody),r.headers=Object.fromEntries(Object.entries(r.headers).filter((t=>!["content-disposition","content-transfer-encoding"].includes(t[0])))),this.partsPath.pop(),r=this.partsPath[this.partsPath.length-1],r.size+=s},deliverPartData(t,e,r){let s=this.partsPath[this.partsPath.length-1];s.body+="string"==typeof e?e:i(e),null===s.rawBody?s.rawBody=r:s.rawBody=function(t){if(1===t.length)return t[0];let e=0;for(let r=0;r<t.length;r++){if(!(t[r]instanceof Uint8Array))throw new Error("concatArrays: Data must be in the form of a Uint8Array");e+=t[r].length}const r=new Uint8Array(e);let s=0;return t.forEach((t=>{r.set(t,s),s+=t.length})),r}([s.rawBody,r])}},q={startPart(t,e){""==t&&(this.headers=e)}},J={body:"",startPart:q.startPart,deliverPartData(t,e){""==t&&(this.body+=e)}};const Z={getParameter(t,e){e=e.toLowerCase(),t=t.replace(/[\r\n]+[ \t]+/g,"");let r=I.parseParameterHeader(";"+t,!0,!0);for(let[t,s]of r.entries())if(e==t.toLowerCase())return s;return""},parseSync(t,e,r){if("string"!=typeof t)throw new Error("input is not a recognizable type!");var s=new $(e,r);s.deliverData(t),s.deliverEOF()},makeParser:(t,e)=>new $(t,e),extractMimeMsg(t,e={}){var r=Object.create(k);r.options={includeAttachments:!0,getMimePart:""};for(let t of Object.keys(e))r.options[t]=e[t];return Z.parseSync(t,r,{pruneat:r.options.getMimePart.split(".").slice(1).join("."),bodyformat:"decode",stripcontinuations:!0,strformat:"unicode"}),r.mimeMsg},extractHeaders(t){var e=Object.create(q);return Z.parseSync(t,e,{pruneat:"",bodyformat:"none"}),e.headers},extractHeadersAndBody(t){var e=Object.create(J);return Z.parseSync(t,e,{pruneat:"",bodyformat:"raw"}),[e.headers,e.body]},HEADER_UNSTRUCTURED:0,HEADER_PARAMETER:2,HEADER_ADDRESS:3,HEADER_OPTION_DECODE_2231:16,HEADER_OPTION_DECODE_2047:32,HEADER_OPTION_ALLOW_RAW:64,HEADER_OPTION_ALL_I18N:112,parseHeaderField(t,e,r){switch(e&Z.HEADER_OPTION_ALLOW_RAW&&(t=I.convert8BitHeader(t,r)),15&e){case Z.HEADER_UNSTRUCTURED:return e&Z.HEADER_OPTION_DECODE_2047&&(t=I.decodeRFC2047Words(t)),t;case Z.HEADER_PARAMETER:return I.parseParameterHeader(t,0!=(e&Z.HEADER_OPTION_DECODE_2047),0!=(e&Z.HEADER_OPTION_DECODE_2231));case Z.HEADER_ADDRESS:return I.parseAddressingHeader(t,0!=(e&Z.HEADER_OPTION_DECODE_2047));default:throw new Error("Illegal type of header field")}}};function Q(t){const e="string"==typeof t?(new TextEncoder).encode(t):t,{headers:r,allAttachments:s,bodyParts:n}=Z.extractMimeMsg(i(e)),a=new Set(["message-id","content-id","from","sender","in-reply-to","reply-to","subject","date","content-disposition","content-type","content-transfer-encoding","priority","mime-version","content-description","precedence","errors-to"]),o={headers:r,attachments:s.map((({parts:t,partName:e,body:r,isEncrypted:s,rawBody:n,...i})=>({...i,content:n||new Uint8Array}))),body:{html:n.html.length?n.html.join("<br>\n").replace(/\r?\n/g,"\n"):null,text:n.text.length?n.text.join("\n").replace(/\r?\n/g,"\n"):null}};return["subject","date","to","from","to","cc","bcc","message-id","in-reply-to","reply-to"].forEach((t=>{if(!r[t])return;const e=r[t]&&I.parseStructuredHeader(t,r[t]);o[t]=a.has(t)&&Array.isArray(e)?e[e.length-1]:e})),o}jsmimeparser=e})();
+</script>
+</body>
+</html>
