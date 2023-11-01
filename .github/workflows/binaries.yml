@@ -27,7 +27,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: ${{ github.workspace }}/mailheap
-          name: mailheap-${{ env.RELEASE_VERSION }}-${{ matrix.go-os }}-${{ matrix.go-arch }}
+          name: mailheap-${{ github.ref_name }}-${{ matrix.go-os }}-${{ matrix.go-arch }}
       - name: Upload Windows
         if: ${{ matrix.go-os == 'windows' }}
         uses: actions/upload-artifact@v3
