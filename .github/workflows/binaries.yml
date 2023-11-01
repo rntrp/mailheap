@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
-      - name: Download dependencies
+      - name: Download Dependencies
         run: go mod download
       - name: Binary Name Unix
         if: ${{ matrix.go-os != 'windows' }}
@@ -26,9 +26,10 @@ jobs:
       - name: Binary Name Windows
         if: ${{ matrix.go-os == 'windows' }}
         run: echo "BINARY_NAME=mailheap-${{ github.ref_name }}-${{ matrix.go-os }}-${{ matrix.go-arch }}.exe" >> $GITHUB_ENV
-      - name: Build
+      - name: Go Build
         run: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w" -o ${{ env.BINARY_NAME }}
       - name: Upload Asset
+        # Note: "Settings > Actions > Workflow permissions > Read and write permissions" must be set
         uses: softprops/action-gh-release@v1
         with:
           files: ${{ env.BINARY_NAME }}
