@@ -21,17 +21,16 @@ jobs:
       - name: Download dependencies
         run: go mod download
       - name: Build
-        if: ${{ matrix.go-os != 'windows' }}
-        run: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w" -o maildump
+        run: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w" -o mailheap
       - name: Upload Unix
         if: ${{ matrix.go-os != 'windows' }}
         uses: actions/upload-artifact@v3
         with:
-          path: ${{ github.workspace }}/maildump
-          name: maildump-${{ env.RELEASE_VERSION }}-${{ matrix.go-os }}-${{ matrix.go-arch }}
+          path: ${{ github.workspace }}/mailheap
+          name: mailheap-${{ env.RELEASE_VERSION }}-${{ matrix.go-os }}-${{ matrix.go-arch }}
       - name: Upload Windows
         if: ${{ matrix.go-os == 'windows' }}
         uses: actions/upload-artifact@v3
         with:
-          path: ${{ github.workspace }}/maildump
-          name: maildump-${{ env.RELEASE_VERSION }}-${{ matrix.go-os }}-${{ matrix.go-arch }}.exe
+          path: ${{ github.workspace }}/mailheap
+          name: mailheap-${{ github.ref_name }}-${{ matrix.go-os }}-${{ matrix.go-arch }}.exe
