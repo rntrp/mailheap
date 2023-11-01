@@ -20,17 +20,20 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Download dependencies
         run: go mod download
-      - name: Build
-        run: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w" -o mailheap
-      - name: Upload Unix
+      - name: Build Unix
         if: ${{ matrix.go-os != 'windows' }}
-        uses: actions/upload-artifact@v3
-        with:
-          path: ${{ github.workspace }}/mailheap
-          name: mailheap-${{ github.ref_name }}-${{ matrix.go-os }}-${{ matrix.go-arch }}
-      - name: Upload Windows
+        run: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w" -o mailheap-${{ github.ref_name }}-${{ matrix.go-os }}-${{ matrix.go-arch }}
+      - name: Build Windows
         if: ${{ matrix.go-os == 'windows' }}
-        uses: actions/upload-artifact@v3
+        run: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w" -o mailheap-${{ github.ref_name }}-${{ matrix.go-os }}-${{ matrix.go-arch }}.exe
+      - name: Upload Asset
+        if: ${{ matrix.go-os != 'windows' }}
+        uses: softprops/action-gh-release@v1
         with:
-          path: ${{ github.workspace }}/mailheap
-          name: mailheap-${{ github.ref_name }}-${{ matrix.go-os }}-${{ matrix.go-arch }}.exe
+          files: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w" -o mailheap-${{ github.ref_name }}-${{ matrix.go-os }}-${{ matrix.go-arch }}
+      - name: Upload Asset
+        if: ${{ matrix.go-os == 'windows' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w" -o mailheap-${{ github.ref_name }}-${{ matrix.go-os }}-${{ matrix.go-arch }}.exe
+
