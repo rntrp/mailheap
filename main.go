@@ -4,12 +4,12 @@ import (
 	"log"
 	"log/slog"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/rntrp/mailheap/internal/httpsrv"
 	"github.com/rntrp/mailheap/internal/msg"
 	"github.com/rntrp/mailheap/internal/rest"
 	"github.com/rntrp/mailheap/internal/smtprecv"
 	"github.com/rntrp/mailheap/internal/storage"
+	_ "modernc.org/sqlite"
 )
 
 func main() {

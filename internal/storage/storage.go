@@ -32,7 +32,7 @@ func New() (MailStorage, error) {
 	} else if f.Close() != nil {
 		log.Println("Closing db file failed:", err)
 	}
-	engine, err := xorm.NewEngine("sqlite3", f.Name())
+	engine, err := xorm.NewEngine("sqlite", f.Name())
 	if err != nil {
 		return nil, err
 	}
