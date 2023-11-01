@@ -20,9 +20,18 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Download dependencies
         run: go mod download
-      - name: Build Unix
+      - name: Build
         if: ${{ matrix.go-os != 'windows' }}
-        run: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w" -o maildump-${{ env.RELEASE_VERSION }}-${{ matrix.go-os }}-${{ matrix.go-arch }}
-      - name: Build Windows
+        run: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w" -o maildump
+      - name: Upload Unix
+        if: ${{ matrix.go-os != 'windows' }}
+        uses: actions/upload-artifact@v3
+        with:
+          path: maildump
+          name: maildump-${{ env.RELEASE_VERSION }}-${{ matrix.go-os }}-${{ matrix.go-arch }}
+      - name: Upload Windows
         if: ${{ matrix.go-os == 'windows' }}
-        run: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w" -o maildump-${{ env.RELEASE_VERSION }}-${{ matrix.go-os }}-${{ matrix.go-arch }}.exe
+        uses: actions/upload-artifact@v3
+        with:
+          path: maildump
+          name: maildump-${{ env.RELEASE_VERSION }}-${{ matrix.go-os }}-${{ matrix.go-arch }}.exe
