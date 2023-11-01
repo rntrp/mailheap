@@ -27,11 +27,11 @@ jobs:
         if: ${{ matrix.go-os != 'windows' }}
         uses: actions/upload-artifact@v3
         with:
-          path: maildump
+          path: ${{ github.workspace }}/maildump
           name: maildump-${{ env.RELEASE_VERSION }}-${{ matrix.go-os }}-${{ matrix.go-arch }}
       - name: Upload Windows
         if: ${{ matrix.go-os == 'windows' }}
         uses: actions/upload-artifact@v3
         with:
-          path: maildump
+          path: ${{ github.workspace }}/maildump
           name: maildump-${{ env.RELEASE_VERSION }}-${{ matrix.go-os }}-${{ matrix.go-arch }}.exe
