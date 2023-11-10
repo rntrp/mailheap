@@ -35,6 +35,8 @@ func New() (MailStorage, error) {
 	engine, err := xorm.NewEngine("sqlite", f.Name())
 	if err != nil {
 		return nil, err
+	} else if err := engine.Sync(new(model.Mail)); err != nil {
+		return nil, err
 	}
 	return &store{
 		engine: engine,
