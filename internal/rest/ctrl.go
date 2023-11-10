@@ -139,7 +139,6 @@ func (c *ctrl) SeekMails(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Add("Content-Type", "application/json")
 	w.Header().Add("Content-Length", strconv.Itoa(len(b)))
-	w.Header().Add("Access-Control-Allow-Origin", "http://localhost:4200") // TODO rm
 	w.Write(b)
 }
 
@@ -165,6 +164,7 @@ func parseLimit(query url.Values) int {
 }
 
 func (c *ctrl) UploadMail(w http.ResponseWriter, r *http.Request) {
+	addSecurityHeaders(w.Header())
 	if err := r.ParseMultipartForm(8192); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

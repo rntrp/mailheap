@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Mimedump</title>
+<title>Mailheap</title>
 <base href="/">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='-2'%20y='14'%3E📮%3C/text%3E%3C/svg%3E" type="image/svg+xml">
@@ -91,10 +91,6 @@ body {
     color: green;
     content: "↘";
 }
-.mail-desc {
-    font-size: 80%;
-    margin: 0.4em 0;
-}
 .mail-content-header,
 .mail-content-body,
 .mail-content-footer {
@@ -114,6 +110,20 @@ body {
 .mail-content-controls {
     margin-top: 2em;
     text-align: right;
+}
+.mail-attachment {
+    border-radius: 8px;
+    border: 2px solid #eee;
+    display: inline-block;
+    padding: 8px;
+    margin: 8px;
+}
+.mail-attachment::before {
+    content: "📎";
+    padding: 8px;
+}
+.mail-attachment-size {
+    color: #999;
 }
 #layout {
     padding-left: 500px;
@@ -178,7 +188,7 @@ body {
                         <a href="#" class="menu-link" onclick="window.location.reload()">📥 Inbox <span id="mail-count">(0)</span></a>
                     </li>
                     <li class="menu-item">
-                        <input id="upload" type="file" accept=".eml,message/rfc822" onchange="uploadMail(this.files[0])" style="display:none"/><a href="#"  class="menu-link" onclick="document.getElementById('upload').click()">🆙 Upload .eml</a>
+                        <input id="upload" type="file" accept=".eml,message/rfc822" onchange="uploadMail(this.files[0])" class="hidden"/><a href="#"  class="menu-link" onclick="document.getElementById('upload').click()">🆙 Upload .eml</a>
                     </li>
                     <li class="menu-item">
                         <a href="#" class="menu-link" onclick="deleteAllMails()">❌ Delete all</a>
@@ -198,11 +208,13 @@ body {
                 <button onclick="showHtml()">HTML</button>
                 <button onclick="showPlain()">Plain</button>
                 <button onclick="showHeaders()">Headers</button>
+                <button onclick="downloadEml()">.eml</button>
             </div>
         </div>
         <iframe id="preview-html" referrerpolicy="no-referrer" csp="default-src 'self'; img-src * data:; style-src 'unsafe-inline';" sandbox></iframe>
         <pre id="preview-plain" class="hidden"></pre>
         <pre id="preview-headers" class="hidden"></pre>
+        <div id="footer-attachments" class="hidden"></div>
     </div>
 </div>
 <script type="text/javascript">
@@ -240,6 +252,7 @@ function previewMail(id) {
             previewHeaders.textContent = eml.substring(0, headerDelim);
             title.textContent = parsed.subject;
             subtitle.textContent = "From " + [parsed.from?.email, parsed.date?.toISOString()].join(" at ");
+            fileAttachments(parsed.attachments);
         });
 }
 function showHtml() {
@@ -257,11 +270,16 @@ function showHeaders() {
     document.getElementById("preview-plain").classList.add("hidden");
     document.getElementById("preview-headers").classList.remove("hidden");
 }
+function downloadEml() {
+    if (currentEml) {
+        // TODO
+    }
+}
 function loadMails() {
     return fetch("/mails/" + lastId + "?limit=" + limit)
         .then(response => response.json())
         .then(result => {
-            for (mail of result.data) {
+            for (const mail of result.data) {
                 lastId = mail.id;
                 addEmailToList(mail.id, mail.from, mail.to, mail.subject);
             }
@@ -270,8 +288,9 @@ function loadMails() {
         });
 }
 function infiniteScroll() {
-    const list = document.getElementById("list")
-    if (list.scrollTop + list.clientHeight >= list.scrollHeight) {
+    const list = document.getElementById("list");
+    const last = list.lastElementChild?.clientHeight ?? 0;
+    if (list.scrollTop + list.clientHeight + last >= list.scrollHeight) {
         loadMails().then(result => {
             if (!result.data || result.data.length < limit) {
                 list.onscrollend = null;
@@ -285,34 +304,72 @@ function addEmailToList(id, from, to, subject) {
     outer.tabIndex = 8192;
     outer.className = "mail-item";
     outer.onfocus = () => previewMail(id);
-
-    const info = document.createElement("div");
-
     const emailFromText = JSON.parse(from).join("; ");
     const emailFrom = document.createElement("h5");
     emailFrom.className = "mail-from";
     emailFrom.textContent = emailFromText;
     emailFrom.title = emailFromText;
-
     const emailToText = JSON.parse(to).join("; ");
     const emailTo = document.createElement("h5");
     emailTo.className = "mail-to";
     emailTo.textContent = emailToText;
     emailTo.title = emailToText;
-
     const emailSubject = document.createElement("h4");
     emailSubject.className = "mail-subject"
     emailSubject.textContent = subject;
-
+    const info = document.createElement("div");
     info.appendChild(emailFrom);
     info.appendChild(emailTo);
     info.appendChild(emailSubject);
     outer.appendChild(info);
     document.getElementById("list").appendChild(outer);
 }
+function fileAttachments(attachments) {
+    const files = [];
+    for (const att of attachments) {
+        if (att && att.content && att.contentDisposition !== "inline") {
+            files.push({
+                blob: URL.createObjectURL(new Blob([att.content], { type: att.contentType })),
+                name: att.fileName,
+                size: att.content.length,
+                type: att.contentType,
+            });
+        }
+    }
+    const footer = document.getElementById("footer-attachments");
+    footer.replaceChildren();
+    footer.classList.add("hidden");
+    if (files.length > 0) {
+        const formatBytes = bytes => {
+            if (bytes >= 1048576) {
+                return (bytes / 1048576).toFixed(2) + "\xa0MiB";
+            } else if (bytes >= 1024) {
+                return (bytes / 1024).toFixed(2) + "\xa0KiB";
+            } else {
+                return bytes + "\xa0B";
+            }
+        }
+        for (const file of files) {
+            const a = document.createElement("a");
+            a.setAttribute("href", file.blob);
+            a.setAttribute("target", "_blank");
+            a.setAttribute("rel", "noreferrer noopener nofollow");
+            a.textContent = file.name;
+            const size = document.createElement("span");
+            size.classList.add("mail-attachment-size");
+            size.textContent = "\xa0(" + formatBytes(file.size) + ")";
+            const div = document.createElement("div");
+            div.classList.add("mail-attachment")
+            div.appendChild(a);
+            div.appendChild(size);
+            footer.appendChild(div);
+        }
+        footer.classList.remove("hidden");
+    }
+}
 function inlineImages(htmlString, attachments) {
     const inlineMap = new Map();
-    for (att of attachments) {
+    for (const att of attachments) {
         if (att.contentId && att.contentDisposition === "inline"
             && ["image/gif", "image/jpeg", "image/png"].includes(att.contentType)) {
             inlineMap.set(att.contentId, att);
@@ -320,7 +377,7 @@ function inlineImages(htmlString, attachments) {
     }
     const html = document.createElement("html");
     html.innerHTML = htmlString;
-    for (img of html.getElementsByTagName("img")) {
+    for (const img of html.getElementsByTagName("img")) {
         if (img.src && img.src.length > 4 && img.src.substring(0, 4).toLowerCase() === "cid:") {
             const cid = "<" + img.src.substring(4) + ">";
             const att = inlineMap.get(cid);
