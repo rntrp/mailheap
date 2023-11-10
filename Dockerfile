@@ -1,7 +1,7 @@
 FROM golang:1.21-bullseye AS builder
 WORKDIR /app
 RUN apt update \
-    && apt install upx-ucl
+    && apt install upx-ucl -y
 COPY . ./
 COPY internal ./internal
 RUN go mod download \
@@ -9,7 +9,7 @@ RUN go mod download \
     && go build -ldflags="-s -w" -o /mailheap \
     && upx --best --lzma /mailheap
 
-FROM gcr.io/distroless/static-debian11:nonroot
-COPY --from=builder /mailheap ./
+FROM gcr.io/distroless/base-nossl-debian11:nonroot
+COPY --from=builder /mailheap /
 EXPOSE 8080
 ENTRYPOINT [ "/mailheap" ]
