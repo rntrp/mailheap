@@ -1,9 +1,18 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"log"
 	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
 
+	"github.com/emersion/go-smtp"
 	"github.com/rntrp/mailheap/internal/httpsrv"
 	"github.com/rntrp/mailheap/internal/msg"
 	"github.com/rntrp/mailheap/internal/rest"
@@ -20,27 +29,72 @@ func main() {
 	}
 	slog.Info("🥞 Database connection established")
 	addMailSvc := msg.NewAddMailSvc(storage)
-	receiver := smtprecv.Init(addMailSvc)
-	defer receiver.Close()
-	server := httpsrv.New(rest.New(storage, addMailSvc))
-	defer server.Close()
-	c := make(chan error)
-	go func() { c <- receiver.ListenAndServe() }()
-	slog.Info("📧 Receiving SMTP connections", "domain", receiver.Domain, "addr", receiver.Addr)
-	go func() { c <- server.ListenAndServe() }()
-	slog.Info("🌐 Listening to HTTP connections", "addr", server.Addr)
-	uiHint(server.Addr)
-	if err := <-c; err != nil {
-		log.Println(err)
+	recv := smtprecv.Init(addMailSvc)
+	sig := make(chan os.Signal, 1)
+	srv := httpsrv.New(rest.New(storage, addMailSvc), sig)
+	shutdown := make(chan error)
+	go shutdownMonitor(sig, shutdown, recv, srv)
+	slog.Info("⏻ Set up graceful shutdown monitor")
+	out := make(chan<- error)
+	go startRecv(out, recv)
+	go startSrv(out, srv)
+	logShutdown(<-shutdown)
+}
+
+func startRecv(out chan<- error, recv *smtp.Server) {
+	slog.Info("📧 Receiving SMTP connections",
+		"domain", recv.Domain,
+		"addr", recv.Addr)
+	out <- recv.ListenAndServe()
+}
+
+func startSrv(out chan<- error, srv *http.Server) {
+	slog.Info("🌐 Listening to HTTP connections",
+		"addr", srv.Addr)
+	if len(srv.Addr) == 0 {
+		slog.Info("💡 Type http://localhost in your browser for UI")
+	} else if srv.Addr[0] == ':' {
+		slog.Info("💡 Type http://localhost" + srv.Addr + " in your browser for UI")
+	} else {
+		slog.Info("💡 Type http://" + srv.Addr + " in your browser for UI")
+	}
+	out <- srv.ListenAndServe()
+}
+
+func shutdownMonitor(sig chan os.Signal, out chan error, switches ...shutdownSwitch) {
+	timeout := 1 * time.Second
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	sigName := (<-sig).String()
+	slog.Info("Signal received: " + sigName)
+	wg := new(sync.WaitGroup)
+	err := make([]error, len(switches))
+	for i, s := range switches {
+		wg.Add(1)
+		go func(i int, s shutdownSwitch) {
+			defer wg.Done()
+			ctx := context.Background()
+			if timeout > 0 {
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithTimeout(ctx, timeout)
+				defer cancel()
+			}
+			err[i] = s.Shutdown(ctx)
+		}(i, s)
+	}
+	wg.Wait()
+	out <- errors.Join(err...)
+}
+
+func logShutdown(err error) {
+	if err == nil {
+		slog.Info("Mailheap was shut down gracefully. Bye.")
+	} else if err == http.ErrServerClosed {
+		slog.Info(err.Error())
+	} else {
+		slog.Error(err.Error())
 	}
 }
 
-func uiHint(addr string) {
-	if len(addr) == 0 {
-		slog.Info("💡 Type http://localhost in your browser for UI")
-	} else if addr[0] == ':' {
-		slog.Info("💡 Type http://localhost" + addr + " in your browser for UI")
-	} else {
-		slog.Info("💡 Type http://" + addr + " in your browser for UI")
-	}
+type shutdownSwitch interface {
+	Shutdown(ctx context.Context) error
 }
