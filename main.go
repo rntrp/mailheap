@@ -18,7 +18,6 @@ import (
 	"github.com/rntrp/mailheap/internal/rest"
 	"github.com/rntrp/mailheap/internal/smtprecv"
 	"github.com/rntrp/mailheap/internal/storage"
-	_ "modernc.org/sqlite"
 )
 
 func main() {
@@ -33,12 +32,15 @@ func main() {
 	sig := make(chan os.Signal, 1)
 	srv := httpsrv.New(rest.New(storage, addMailSvc), sig)
 	shutdown := make(chan error)
-	go shutdownMonitor(sig, shutdown, recv, srv)
+	go shutdownMonitor(sig, shutdown, storage, recv, srv)
 	slog.Info("⏻ Set up graceful shutdown monitor")
 	out := make(chan<- error)
 	go startRecv(out, recv)
 	go startSrv(out, srv)
 	logShutdown(<-shutdown)
+	if err := storage.Shutdown(); err != nil {
+		slog.Error("DB shutdown failed", "error", err.Error())
+	}
 }
 
 func startRecv(out chan<- error, recv *smtp.Server) {
@@ -61,13 +63,14 @@ func startSrv(out chan<- error, srv *http.Server) {
 	out <- srv.ListenAndServe()
 }
 
-func shutdownMonitor(sig chan os.Signal, out chan error, switches ...shutdownSwitch) {
+func shutdownMonitor(sig chan os.Signal, out chan error,
+	mailStorage storage.MailStorage, switches ...shutdownSwitch) {
 	timeout := 1 * time.Second
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	sigName := (<-sig).String()
 	slog.Info("Signal received: " + sigName)
 	wg := new(sync.WaitGroup)
-	err := make([]error, len(switches))
+	err := make([]error, len(switches)+1)
 	for i, s := range switches {
 		wg.Add(1)
 		go func(i int, s shutdownSwitch) {
@@ -82,6 +85,7 @@ func shutdownMonitor(sig chan os.Signal, out chan error, switches ...shutdownSwi
 		}(i, s)
 	}
 	wg.Wait()
+	err[len(err)-1] = mailStorage.Shutdown()
 	out <- errors.Join(err...)
 }
 
