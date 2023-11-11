@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/glebarez/sqlite"
 	"github.com/rntrp/mailheap/internal/idsrc"
 	"github.com/rntrp/mailheap/internal/model"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 

@@ -177,16 +177,13 @@ func (c *ctrl) UploadMail(w http.ResponseWriter, r *http.Request) {
 	} else if r.MultipartForm != nil {
 		defer r.MultipartForm.RemoveAll()
 	}
-	f, fh, err := r.FormFile("eml")
+	f, _, err := r.FormFile("eml")
 	if err != nil {
 		http.Error(w, "file 'eml' is missing", http.StatusBadRequest)
 		return
 	}
 	defer f.Close()
-	if fh.Size < 64 {
-		http.Error(w, "file size too small for a valid document",
-			http.StatusBadRequest)
-	} else if err := c.storeMail.StoreMail(f); err != nil {
+	if err := c.storeMail.StoreMail(f); err != nil {
 		log.Println(err)
 		http.Error(w, "eml could not be stored", http.StatusBadRequest)
 	}
