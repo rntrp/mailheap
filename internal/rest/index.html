@@ -213,6 +213,7 @@ body {
     </div>
 </div>
 <script type="text/javascript">
+"use strict";
 const limit = 10;
 var lastId = 0;
 var currentId = 0;
@@ -401,8 +402,13 @@ function uploadMail(eml) {
 function deleteAllMails() {
     if (confirm("Delete all mails?")) {
         fetch("/mails", { method: "DELETE" })
-            .then(response => window.location.reload(),
-                err => alert("Delete all mails failed: " + err));
+            .then(response => {
+                window.location.reload();
+                const previewHtml = document.getElementById("preview-html");
+                previewHtml.classList.remove("hidden");
+                previewHtml.removeAttribute("title");
+                previewHtml.removeAttribute("srcdoc");
+            }, err => alert("Delete all mails failed: " + err));
     }
 }
 </script>
