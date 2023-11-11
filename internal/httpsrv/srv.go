@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rntrp/mailheap/internal/rest"
 )
 
@@ -19,6 +20,8 @@ func New(ctrl rest.Controller, shutdown chan os.Signal) *http.Server {
 	r.Delete("/mails", ctrl.DeleteMails)
 	r.Get("/mails/{id}", ctrl.SeekMails)
 	r.Post("/upload", ctrl.UploadMail)
+	r.Get("/health", rest.Live)
+	r.Handle("/metrics", promhttp.Handler())
 	r.Post("/shutdown", shutdownFn(shutdown))
 	return &http.Server{Addr: ":8080", Handler: r}
 }
