@@ -43,7 +43,8 @@ func (c *ctrl) GetEml(w http.ResponseWriter, r *http.Request) {
 	eml, err := c.storage.GetMime(id)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError)
 		return
 	} else if len(eml) == 0 {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -85,10 +86,12 @@ func (c *ctrl) DeleteMails(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		log.Println(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError)
 	} else if b, err := json.Marshal(DeleteMailsResult{NumDeleted: numDeleted}); err != nil {
 		log.Println(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError)
 	} else {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Content-Length", strconv.Itoa(len(b)))
@@ -116,14 +119,16 @@ func (c *ctrl) SeekMails(w http.ResponseWriter, r *http.Request) {
 	total, err := c.storage.CountMails()
 	if err != nil {
 		log.Println(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError)
 		return
 	}
 	limit := parseLimit(r.URL.Query())
 	mails, err := c.storage.SeekMails(id, limit)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError)
 		return
 	}
 	b, err := json.Marshal(SeekMailsResult{
@@ -134,7 +139,8 @@ func (c *ctrl) SeekMails(w http.ResponseWriter, r *http.Request) {
 		Data:  mails})
 	if err != nil {
 		log.Println(err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError)
 		return
 	}
 	w.Header().Add("Content-Type", "application/json")
