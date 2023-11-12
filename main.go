@@ -51,13 +51,13 @@ func startRecv(out chan<- error, recv *smtp.Server) {
 }
 
 func startSrv(out chan<- error, srv *http.Server) {
-	slog.Info("🌐 Listening to HTTP connections",
-		"addr", srv.Addr)
-	if len(srv.Addr) == 0 {
+	slog.Info("🌐 Listening to HTTP connections", "addr", srv.Addr)
+	switch {
+	case len(srv.Addr) == 0:
 		slog.Info("💡 Type http://localhost in your browser for UI")
-	} else if srv.Addr[0] == ':' {
+	case srv.Addr[0] == ':':
 		slog.Info("💡 Type http://localhost" + srv.Addr + " in your browser for UI")
-	} else {
+	default:
 		slog.Info("💡 Type http://" + srv.Addr + " in your browser for UI")
 	}
 	out <- srv.ListenAndServe()
@@ -68,11 +68,12 @@ func shutdownMonitor(sig chan os.Signal, out chan error,
 	timeout := 1 * time.Second
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	sigName := (<-sig).String()
-	slog.Info("Signal received: " + sigName)
+	slog.Info("Shutdown signal received", "signal", sigName)
 	wg := new(sync.WaitGroup)
-	err := make([]error, len(switches)+1)
+	num := len(switches)
+	err := make([]error, num+1)
+	wg.Add(num)
 	for i, s := range switches {
-		wg.Add(1)
 		go func(i int, s shutdownSwitch) {
 			defer wg.Done()
 			ctx := context.Background()
@@ -85,16 +86,17 @@ func shutdownMonitor(sig chan os.Signal, out chan error,
 		}(i, s)
 	}
 	wg.Wait()
-	err[len(err)-1] = mailStorage.Shutdown()
+	err[num] = mailStorage.Shutdown()
 	out <- errors.Join(err...)
 }
 
 func logShutdown(err error) {
-	if err == nil {
+	switch err {
+	case nil:
 		slog.Info("Mailheap was shut down gracefully. Bye.")
-	} else if err == http.ErrServerClosed {
+	case http.ErrServerClosed:
 		slog.Info(err.Error())
-	} else {
+	default:
 		slog.Error(err.Error())
 	}
 }
