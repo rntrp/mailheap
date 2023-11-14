@@ -6,4 +6,5 @@ services:
     restart: "no"
     build: .
     ports:
+      - "2525:2525"
       - "8080:8080"
