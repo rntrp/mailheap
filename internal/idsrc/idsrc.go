@@ -10,7 +10,7 @@ import (
 var ErrEpochExhausted = errors.New("the epoch is exhausted; cannot generate new IDs")
 var ErrInvalidID = errors.New("this ID is invalid")
 
-const epochOffset = int64(1_690_000_000_000)
+const epochOffset = int64(1_700_000_000_000)
 const maxEpochMilli = int64(1_099_511_627_775) // upper 40 bits ≈ 35 years
 const cntOffset = 8
 const maxCnt = int64(255) // lower 8 bits
