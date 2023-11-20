@@ -3,10 +3,10 @@ package smtprecv
 import (
 	"io"
 	"log/slog"
-	"time"
 
 	"github.com/emersion/go-smtp"
 	"github.com/google/uuid"
+	"github.com/rntrp/mailheap/internal/config"
 	"github.com/rntrp/mailheap/internal/msg"
 )
 
@@ -80,17 +80,23 @@ func (s *session) Logout() error {
 
 func Init(addMailSvc msg.StoreMailSvc) *smtp.Server {
 	s := smtp.NewServer(&recv{
-		username:   "username",
-		password:   "password",
+		username:   config.GetSMTPUsername(),
+		password:   config.GetSMTPPassword(),
 		addMailSvc: addMailSvc,
 	})
-	s.Addr = ":2525"
-	s.Domain = "localhost"
-	s.ReadTimeout = 60 * time.Second
-	s.WriteTimeout = 60 * time.Second
-	s.MaxMessageBytes = 50 * 1024 * 1024
-	s.MaxRecipients = 50
-	s.AllowInsecureAuth = true
-	s.EnableSMTPUTF8 = true
+	s.Network = config.GetSMTPNetworkType()
+	s.Addr = config.GetSMTPAddress()
+	s.Domain = config.GetSMTPDomain()
+	s.ReadTimeout = config.GetSMTPReadTimeout()
+	s.WriteTimeout = config.GetSMTPWriteTimeout()
+	s.MaxMessageBytes = config.GetSMTPMaxMessageBytes()
+	s.MaxRecipients = int(config.GetSMTPMaxRecipients())
+	s.MaxLineLength = int(config.GetSMTPMaxLineLength())
+	s.AllowInsecureAuth = config.IsSMTPAllowInsecureAuth()
+	s.EnableSMTPUTF8 = config.IsSMTPEnableSMTPUTF8()
+	s.EnableBINARYMIME = config.IsSMTPEnableBINARYMIME()
+	s.EnableDSN = config.IsSMTPEnableDSN()
+	s.EnableREQUIRETLS = config.IsSMTPEnableREQUIRETLS()
+	s.AuthDisabled = config.IsSMTPDisableAuth()
 	return s
 }

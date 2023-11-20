@@ -10,9 +10,9 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 
 	"github.com/emersion/go-smtp"
+	"github.com/rntrp/mailheap/internal/config"
 	"github.com/rntrp/mailheap/internal/httpsrv"
 	"github.com/rntrp/mailheap/internal/msg"
 	"github.com/rntrp/mailheap/internal/rest"
@@ -21,6 +21,7 @@ import (
 )
 
 func main() {
+	config.Load()
 	slog.Info("📮 Initializing services...")
 	storage, err := storage.New()
 	if err != nil {
@@ -65,7 +66,7 @@ func startSrv(out chan<- error, srv *http.Server) {
 
 func shutdownMonitor(sig chan os.Signal, out chan error,
 	mailStorage storage.MailStorage, switches ...shutdownSwitch) {
-	timeout := 1 * time.Second
+	timeout := config.GetShutdownTimeout()
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	sigName := (<-sig).String()
 	slog.Info("Shutdown signal received", "signal", sigName)

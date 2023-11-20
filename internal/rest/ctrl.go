@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/rntrp/mailheap/internal/config"
 	"github.com/rntrp/mailheap/internal/model"
 	"github.com/rntrp/mailheap/internal/msg"
 	"github.com/rntrp/mailheap/internal/storage"
@@ -171,7 +172,11 @@ func parseLimit(query url.Values) int {
 
 func (c *ctrl) UploadMail(w http.ResponseWriter, r *http.Request) {
 	addSecurityHeaders(w.Header())
-	if err := r.ParseMultipartForm(8192); err != nil {
+	if !setupFileSizeChecks(w, r) {
+		return
+	}
+	maxMemory := coerceMemoryBufferSize(config.GetHTTPUploadMemoryBufferSize())
+	if err := r.ParseMultipartForm(maxMemory); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	} else if r.MultipartForm != nil {
