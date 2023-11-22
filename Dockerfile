@@ -12,4 +12,5 @@ RUN go mod download \
 FROM gcr.io/distroless/base-nossl-debian11:nonroot
 COPY --from=builder /mailheap /
 EXPOSE 2525 8080
+ENV MAILHEAP_ENV production
 ENTRYPOINT [ "/mailheap" ]
