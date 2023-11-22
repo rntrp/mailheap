@@ -23,6 +23,7 @@ import (
 func main() {
 	config.Load()
 	slog.Info("📮 Initializing services...")
+	rest.InitIndex()
 	storage, err := storage.New()
 	if err != nil {
 		log.Fatal(err)

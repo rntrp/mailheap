@@ -41,10 +41,10 @@ func loadDotEnv() {
 func loadEnv() {
 	v.MAILHEAP_TEMP_DIR = parseString("MAILHEAP_TEMP_DIR", os.TempDir())
 	v.MAILHEAP_DB_LOCATION = parseString("MAILHEAP_DB_LOCATION", filepath.Join(os.TempDir(), "mailheap.db"))
-	v.MAILHEAP_SHUTDOWN_TIMEOUT = parseDuration("MAILHEAP_SHUTDOWN_TIMEOUT", 0, time.Second)
+	v.MAILHEAP_SHUTDOWN_TIMEOUT = parseDuration("MAILHEAP_SHUTDOWN_TIMEOUT", 0)
 	v.MAILHEAP_HTTP_TCP_ADDRESS = parseString("MAILHEAP_HTTP_TCP_ADDRESS", ":8080")
 	v.MAILHEAP_HTTP_MAX_REQUEST_SIZE = parseInt64("MAILHEAP_HTTP_MAX_REQUEST_SIZE", -1)
-	v.MAILHEAP_HTTP_UPLOAD_MEMBUF_SIZE = parseInt64("MAILHEAP_HTTP_UPLOAD_MEMBUF_SIZE", 10<<20)
+	v.MAILHEAP_HTTP_UPLOAD_MEMORY_BUFFER_SIZE = parseInt64("MAILHEAP_HTTP_UPLOAD_MEMORY_BUFFER_SIZE", 10<<20)
 	v.MAILHEAP_HTTP_ENABLE_PROMETHEUS = parseBool("MAILHEAP_HTTP_ENABLE_PROMETHEUS", false)
 	v.MAILHEAP_HTTP_ENABLE_SHUTDOWN = parseBool("MAILHEAP_HTTP_ENABLE_SHUTDOWN", false)
 	v.MAILHEAP_SMTP_USERNAME = parseString("MAILHEAP_SMTP_USERNAME", "username")
@@ -52,9 +52,9 @@ func loadEnv() {
 	v.MAILHEAP_SMTP_NETWORK_TYPE = parseString("MAILHEAP_SMTP_NETWORK_TYPE", "tcp")
 	v.MAILHEAP_SMTP_ADDRESS = parseString("MAILHEAP_SMTP_ADDRESS", ":2525")
 	v.MAILHEAP_SMTP_DOMAIN = parseString("MAILHEAP_SMTP_DOMAIN", "localhost")
-	v.MAILHEAP_SMTP_READ_TIMEOUT = parseDuration("MAILHEAP_SMTP_READ_TIMEOUT", 10, time.Second)
-	v.MAILHEAP_SMTP_WRITE_TIMEOUT = parseDuration("MAILHEAP_SMTP_WRITE_TIMEOUT", 10, time.Second)
-	v.MAILHEAP_SMTP_MAX_MSG_BYTES = parseInt64("MAILHEAP_SMTP_MAX_MSG_BYTES", 50*1024*1024)
+	v.MAILHEAP_SMTP_READ_TIMEOUT = parseDuration("MAILHEAP_SMTP_READ_TIMEOUT", 10*time.Second)
+	v.MAILHEAP_SMTP_WRITE_TIMEOUT = parseDuration("MAILHEAP_SMTP_WRITE_TIMEOUT", 10*time.Second)
+	v.MAILHEAP_SMTP_MAX_MESSAGE_BYTES = parseInt64("MAILHEAP_SMTP_MAX_MESSAGE_BYTES", 50*1024*1024)
 	v.MAILHEAP_SMTP_MAX_RECIPIENTS = parseInt64("MAILHEAP_SMTP_MAX_RECIPIENTS", 50)
 	v.MAILHEAP_SMTP_MAX_LINE_LENGTH = parseInt64("MAILHEAP_SMTP_MAX_LINE_LENGTH", 2000)
 	v.MAILHEAP_SMTP_ALLOW_INSECURE_AUTH = parseBool("MAILHEAP_SMTP_ALLOW_INSECURE_AUTH", false)
@@ -87,6 +87,9 @@ func parseInt64(env string, def int64) int64 {
 	return def
 }
 
-func parseDuration(env string, def int64, unit time.Duration) time.Duration {
-	return time.Duration(parseInt64(os.Getenv(env), def)) * unit
+func parseDuration(env string, def time.Duration) time.Duration {
+	if d, err := time.ParseDuration(env); err == nil {
+		return d
+	}
+	return def
 }

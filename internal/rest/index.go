@@ -22,7 +22,7 @@ var indexHtmlGz []byte
 
 var indexHtmlGzEtag string
 
-func init() {
+func InitIndex() {
 	hasher := fnv.New128a()
 	if _, err := hasher.Write(indexHtml); err != nil {
 		log.Fatal(err)

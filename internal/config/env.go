@@ -2,43 +2,47 @@ package config
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"reflect"
 	"strings"
 	"time"
 )
 
 type values struct {
-	MAILHEAP_ENV                      string
-	MAILHEAP_ENV_DIR                  string
-	MAILHEAP_TEMP_DIR                 string
-	MAILHEAP_DB_LOCATION              string
-	MAILHEAP_SHUTDOWN_TIMEOUT         time.Duration
-	MAILHEAP_HTTP_TCP_ADDRESS         string
-	MAILHEAP_HTTP_MAX_REQUEST_SIZE    int64
-	MAILHEAP_HTTP_UPLOAD_MEMBUF_SIZE  int64
-	MAILHEAP_HTTP_ENABLE_PROMETHEUS   bool
-	MAILHEAP_HTTP_ENABLE_SHUTDOWN     bool
-	MAILHEAP_SMTP_USERNAME            string
-	MAILHEAP_SMTP_PASSWORD            string
-	MAILHEAP_SMTP_NETWORK_TYPE        string
-	MAILHEAP_SMTP_ADDRESS             string
-	MAILHEAP_SMTP_DOMAIN              string
-	MAILHEAP_SMTP_READ_TIMEOUT        time.Duration
-	MAILHEAP_SMTP_WRITE_TIMEOUT       time.Duration
-	MAILHEAP_SMTP_MAX_MSG_BYTES       int64
-	MAILHEAP_SMTP_MAX_RECIPIENTS      int64
-	MAILHEAP_SMTP_MAX_LINE_LENGTH     int64
-	MAILHEAP_SMTP_ALLOW_INSECURE_AUTH bool
-	MAILHEAP_SMTP_DISABLE_AUTH        bool
-	MAILHEAP_SMTP_ENABLE_SMTPUTF8     bool
-	MAILHEAP_SMTP_ENABLE_LMTP         bool
-	MAILHEAP_SMTP_ENABLE_REQUIRETLS   bool
-	MAILHEAP_SMTP_ENABLE_BINARYMIME   bool
-	MAILHEAP_SMTP_ENABLE_DSN          bool
+	MAILHEAP_ENV                            string
+	MAILHEAP_ENV_DIR                        string
+	MAILHEAP_TEMP_DIR                       string
+	MAILHEAP_DB_LOCATION                    string
+	MAILHEAP_SHUTDOWN_TIMEOUT               time.Duration
+	MAILHEAP_HTTP_TCP_ADDRESS               string
+	MAILHEAP_HTTP_MAX_REQUEST_SIZE          int64
+	MAILHEAP_HTTP_UPLOAD_MEMORY_BUFFER_SIZE int64
+	MAILHEAP_HTTP_ENABLE_PROMETHEUS         bool
+	MAILHEAP_HTTP_ENABLE_SHUTDOWN           bool
+	MAILHEAP_SMTP_USERNAME                  string
+	MAILHEAP_SMTP_PASSWORD                  string
+	MAILHEAP_SMTP_NETWORK_TYPE              string
+	MAILHEAP_SMTP_ADDRESS                   string
+	MAILHEAP_SMTP_DOMAIN                    string
+	MAILHEAP_SMTP_READ_TIMEOUT              time.Duration
+	MAILHEAP_SMTP_WRITE_TIMEOUT             time.Duration
+	MAILHEAP_SMTP_MAX_MESSAGE_BYTES         int64
+	MAILHEAP_SMTP_MAX_RECIPIENTS            int64
+	MAILHEAP_SMTP_MAX_LINE_LENGTH           int64
+	MAILHEAP_SMTP_ALLOW_INSECURE_AUTH       bool
+	MAILHEAP_SMTP_DISABLE_AUTH              bool
+	MAILHEAP_SMTP_ENABLE_SMTPUTF8           bool
+	MAILHEAP_SMTP_ENABLE_LMTP               bool
+	MAILHEAP_SMTP_ENABLE_REQUIRETLS         bool
+	MAILHEAP_SMTP_ENABLE_BINARYMIME         bool
+	MAILHEAP_SMTP_ENABLE_DSN                bool
 }
 
 var v values
+
+var secrets = map[string]bool{
+	"MAILHEAP_SMTP_PASSWORD": true,
+}
 
 func (v *values) print() {
 	buf := new(strings.Builder)
@@ -48,10 +52,25 @@ func (v *values) print() {
 	valNumField := val.NumField()
 	for i := 0; i < valNumField; i++ {
 		a := valType.Field(i).Name
-		b := val.Field(i).Interface()
+		b := obfuscate(a, val.Field(i).Interface())
 		buf.WriteString(fmt.Sprintf("%-40s= %v\n", a, b))
 	}
-	log.Print(buf.String())
+	slog.Info(buf.String())
+}
+
+func obfuscate(key string, value any) any {
+	if secrets[key] {
+		buf := new(strings.Builder)
+		for i, r := range value.(string) {
+			if i == 0 {
+				buf.WriteRune(r)
+			} else {
+				buf.WriteRune('*')
+			}
+		}
+		return buf.String()
+	}
+	return value
 }
 
 func GetEnv() string {
@@ -79,7 +98,7 @@ func GetHTTPMaxRequestSize() int64 {
 }
 
 func GetHTTPUploadMemoryBufferSize() int64 {
-	return v.MAILHEAP_HTTP_UPLOAD_MEMBUF_SIZE
+	return v.MAILHEAP_HTTP_UPLOAD_MEMORY_BUFFER_SIZE
 }
 
 func IsHTTPEnablePrometheus() bool {
@@ -123,7 +142,7 @@ func GetSMTPWriteTimeout() time.Duration {
 }
 
 func GetSMTPMaxMessageBytes() int64 {
-	return v.MAILHEAP_SMTP_MAX_MSG_BYTES
+	return v.MAILHEAP_SMTP_MAX_MESSAGE_BYTES
 }
 
 func GetSMTPMaxRecipients() int64 {
