@@ -19,22 +19,21 @@ func TestGenUnique(t *testing.T) {
 	var wg sync.WaitGroup
 	const routines, iterations = 100, 2000
 	var a [routines][iterations]int64
-	for i := 0; i < routines; i++ {
-		i := i
-		wg.Add(1)
-		go func() {
+	wg.Add(routines)
+	for routine := 0; routine < routines; routine++ {
+		go func(routine int) {
 			defer wg.Done()
-			for j := 0; j < iterations; j++ {
-				a[i][j], _ = src.Gen()
+			for iteration := 0; iteration < iterations; iteration++ {
+				a[routine][iteration], _ = src.Gen()
 				// ignore errors, those will pop up as zeros later
 			}
-		}()
+		}(routine)
 	}
 	wg.Wait()
 	m := make(map[int64]bool, routines*iterations)
-	for i := 0; i < routines; i++ {
-		for j := 0; j < iterations; j++ {
-			id := a[i][j]
+	for routine := 0; routine < routines; routine++ {
+		for iteration := 0; iteration < iterations; iteration++ {
+			id := a[routine][iteration]
 			if id == 0 || m[id] {
 				println(id, m[id])
 				t.FailNow() // error or duplicate
