@@ -5,8 +5,8 @@ go 1.21
 require (
 	github.com/emersion/go-smtp v0.19.0
 	github.com/glebarez/sqlite v1.10.0
-	github.com/go-chi/chi/v5 v5.0.10
-	github.com/google/uuid v1.4.0
+	github.com/go-chi/chi/v5 v5.0.11
+	github.com/google/uuid v1.5.0
 	github.com/joho/godotenv v1.5.1
 	github.com/prometheus/client_golang v1.17.0
 	gorm.io/gorm v1.25.5
@@ -26,10 +26,10 @@ require (
 	github.com/prometheus/common v0.45.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	golang.org/x/sys v0.14.0 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
-	modernc.org/libc v1.34.9 // indirect
+	golang.org/x/sys v0.15.0 // indirect
+	google.golang.org/protobuf v1.32.0 // indirect
+	modernc.org/libc v1.38.0 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.7.2 // indirect
-	modernc.org/sqlite v1.27.0 // indirect
+	modernc.org/sqlite v1.28.0 // indirect
 )
