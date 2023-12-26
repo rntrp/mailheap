@@ -19,6 +19,11 @@ import (
 
 type Controller interface {
 	Index(w http.ResponseWriter, r *http.Request)
+	IndexFaviconIco(w http.ResponseWriter, r *http.Request)
+	IndexFaviconSvg(w http.ResponseWriter, r *http.Request)
+	IndexCss(w http.ResponseWriter, r *http.Request)
+	IndexJs(w http.ResponseWriter, r *http.Request)
+	IndexJsMimeParser(w http.ResponseWriter, r *http.Request)
 	GetEml(w http.ResponseWriter, r *http.Request)
 	DeleteMails(w http.ResponseWriter, r *http.Request)
 	SeekMails(w http.ResponseWriter, r *http.Request)
