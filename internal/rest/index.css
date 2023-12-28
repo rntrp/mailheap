@@ -1,168 +1,207 @@
 body {
-	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  margin: 0;
 }
-.hidden {
-    display: none !important;
+
+nav {
+  position: relative;
+  background: #1e90ff;
+  border: none;
+  text-align: center;
+  display: block;
+  padding: 2em 0;
+  margin-left: -540px;
+  width: 180px;
+  height: 100%;
+  text-align: left;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  overflow: auto;
 }
-.menu-list {
-    position: relative;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+
+nav .menu-link:hover,
+nav .menu-link:focus {
+  background: #778;
 }
-.menu-item {
-    position: relative;
-    padding: 0;
-    margin: 0;
-    height: 100%
+
+nav .menu-link {
+  color: #fff;
+  margin-left: 0.5em;
+  display: block;
+  text-decoration: none;
+  white-space: nowrap;
 }
+
+nav .menu-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav .menu-item {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+}
+
+nav #logo {
+  display: flex;
+  margin-left: 0.5em;
+}
+
+nav #logo img {
+  filter: brightness(100);
+  width: 2em;
+}
+
+nav #logo span {
+  color: #fff;
+  font-size: x-large;
+  margin: 0.1em;
+}
+
 #layout,
-#nav,
 #list,
 #main {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
-#nav {
-    width: 100%;
-    height: 40px;
-    position: relative;
-    background: #103;
-    text-align: center;
-}
-#nav .menu {
-    background: transparent;
-    border: none;
-    text-align: left;
-}
-#nav .menu-link:hover,
-#nav .menu-link:focus {
-    background: #778;
-}
-#nav .menu-link {
-    color: #fff;
-    margin-left: 0.5em;
-    display: block;
-    text-decoration: none;
-    white-space: nowrap;
-}
+
 .mail-item {
-    padding: 0.9em 1em;
-    border-bottom: 1px solid #ddd;
-    border-left: 6px solid transparent;
-    cursor: pointer;
+  padding: 0.9em 1em;
+  border-bottom: 1px solid #ddd;
+  border-left: 4px solid transparent;
+  cursor: pointer;
 }
+
 .mail-item:focus {
-    background: #eee;
-    cursor: auto;
+  background: #eee;
+  border-left: 4px solid #999;
+  cursor: auto;
 }
+
 .mail-subject {
-    margin: 0;
+  margin: 0;
 }
+
 .mail-from,
 .mail-to {
-    overflow: hidden;
-    text-transform: uppercase;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: #999;
-    margin: 0;
+  overflow: hidden;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #999;
+  margin: 0;
 }
+
 .mail-from::before {
-    color: red;
-    content: "↗";
+  color: red;
+  content: "↗";
 }
+
 .mail-to::before {
-    color: green;
-    content: "↘";
+  color: green;
+  content: "↘";
 }
+
 .mail-content-header,
 .mail-content-body,
 .mail-content-footer {
-    padding: 1em 2em;
+  padding: 1em 2em;
 }
+
 .mail-content-header {
-    border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
 }
+
 .mail-content-title {
-    margin: 0.5em 0 0;
+  margin: 0.5em 0 0;
 }
+
 .mail-content-subtitle {
-    font-size: 1em;
-    margin: 0;
-    font-weight: normal;
+  font-size: 1em;
+  margin: 0;
+  font-weight: normal;
 }
+
 .mail-content-controls {
-    margin-top: 2em;
-    text-align: right;
+  margin-top: 2em;
+  text-align: right;
 }
+
 .mail-attachment {
-    border-radius: 8px;
-    border: 2px solid #eee;
-    display: inline-block;
-    padding: 8px;
-    margin: 8px;
+  border-radius: 8px;
+  border: 2px solid #eee;
+  display: inline-block;
+  padding: 8px;
+  margin: 8px;
 }
+
 .mail-attachment::before {
-    content: "📎";
-    padding: 8px;
+  content: "📎";
+  padding: 8px;
 }
+
 .mail-attachment-size {
-    color: #999;
+  color: #999;
 }
+
 #layout {
-    padding-left: 500px;
-    position: relative;
+  padding-left: 540px;
+  position: relative;
 }
-#nav,
+
 #list {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    overflow: auto;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  overflow: auto;
 }
-#nav {
-    margin-left:-500px;
-    width:150px;
-    height: 100%;
-}
-.nav-inner {
-    display: block;
-    padding: 2em 0;
-}
+
 #mail-count {
-    color: #aaa;
+  color: #aaa;
 }
+
 #list {
-    margin-left: -350px;
-    width: 350px;
-    height: 100%;
-    border-right: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
+  margin-left: -360px;
+  width: 360px;
+  height: 100%;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
 }
+
 #main {
-    position: static;
-    margin: 0;
-    padding: 0;
-    right: 0;
-    bottom: 0;
-    left: 150px;
-    overflow: auto;
-    display: flex;
-    width: 100%;
-    height: 100vh;
-    flex-direction: column;
+  position: static;
+  margin: 0;
+  padding: 0;
+  right: 0;
+  bottom: 0;
+  left: 160px;
+  overflow: auto;
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  flex-direction: column;
 }
+
 #preview-html,
 #preview-plain,
 #preview-headers {
-    margin: 0;
-    padding: 0;
-    border: none;
-    flex-grow: 1;
+  margin: 0;
+  padding: 0;
+  border: none;
+  flex-grow: 1;
 }
+
 #preview-plain,
 #preview-headers {
-    margin: 1em;
+  margin: 1em;
+}
+
+.hidden {
+  display: none !important;
 }

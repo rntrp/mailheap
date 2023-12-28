@@ -1,54 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Mailheap</title>
-<base href="/">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#1e90ff">
-<link rel="icon" href="favicon.svg">
-<link rel="stylesheet" href="index.css">
-</head>
-<body>
-<div id="layout" class="content">
-    <div id="nav">
-        <div class="nav-inner">
-            <div class="menu">
-                <ul class="menu-list">
-                    <li class="menu-item">
-                        <a id="inbox" href="#" class="menu-link">📥 Inbox <span id="mail-count">(0)</span></a>
-                    </li>
-                    <li class="menu-item">
-                        <input id="upload" type="file" accept=".eml,message/rfc822" class="hidden"/><a id="uploadLink" href="#" class="menu-link">🆙 Upload .eml</a>
-                    </li>
-                    <li class="menu-item">
-                        <a id="delete" href="#" class="menu-link">❌ Delete all</a>
-                    </li>
-                </ul>
+  <head>
+    <meta charset="utf-8" />
+    <title>Mailheap</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1e90ff" />
+    <link rel="icon" href="favicon.svg" />
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <div id="layout" class="content">
+      <nav>
+        <ul class="menu-list">
+          <li class="menu-item">
+            <div id="logo">
+              <img src="favicon.svg" alt="Mailheap Logo" />
+              <span>Mailheap</span>
             </div>
-        </div>
-    </div>
-    <div id="list"></div>
-    <div id="main">
+          </li>
+          <li class="menu-item">
+            <a id="inbox" href="#" class="menu-link"
+              >📥 Inbox <span id="mail-count">(0)</span></a
+            >
+          </li>
+          <li class="menu-item">
+            <input
+              id="upload"
+              type="file"
+              accept=".eml,message/rfc822"
+              class="hidden"
+            /><a id="uploadLink" href="#" class="menu-link">🆙 Upload .eml</a>
+          </li>
+          <li class="menu-item">
+            <a id="delete" href="#" class="menu-link">❌ Delete all</a>
+          </li>
+        </ul>
+      </nav>
+      <div id="list"></div>
+      <div id="main">
         <div class="mail-content-header">
-            <div>
-                <h3 id="preview-title" class="mail-content-title"></h3>
-                <p id="preview-subtitle" class="mail-content-subtitle"></p>
-            </div>
-            <div class="mail-content-controls">
-                <button id="showHtml">HTML</button>
-                <button id="showPlain">Plain</button>
-                <button id="showHeaders">Headers</button>
-                <button id="downloadEml">.eml</button>
-            </div>
+          <div>
+            <h3 id="preview-title" class="mail-content-title"></h3>
+            <p id="preview-subtitle" class="mail-content-subtitle"></p>
+          </div>
+          <div class="mail-content-controls">
+            <button id="showHtml">HTML</button>
+            <button id="showPlain">Plain</button>
+            <button id="showHeaders">Headers</button>
+            <button id="downloadEml">.eml</button>
+          </div>
         </div>
         <iframe id="preview-html" referrerpolicy="no-referrer" sandbox></iframe>
         <pre id="preview-plain" class="hidden"></pre>
         <pre id="preview-headers" class="hidden"></pre>
         <div id="footer-attachments" class="hidden"></div>
+      </div>
     </div>
-</div>
-<script type="text/javascript" src="index.js"></script>
-<script type="text/javascript" src="index.jsmimeparser.min.js"></script>
-</body>
+    <script type="text/javascript" src="index.js"></script>
+    <script type="text/javascript" src="index.jsmimeparser.min.js"></script>
+  </body>
 </html>
