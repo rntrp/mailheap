@@ -10,6 +10,11 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/css"
+	"github.com/tdewolff/minify/v2/html"
+	"github.com/tdewolff/minify/v2/js"
 )
 
 //go:embed index.html
@@ -63,6 +68,7 @@ var jsmimeparserGz []byte
 var jsmimeparserGzEtag string
 
 func InitIndex() {
+	indexHtml = min("text/html", indexHtml)
 	indexHtmlEtag = etag(indexHtml)
 	indexHtmlGz = gz(indexHtml)
 	indexHtmlGzEtag = etag(indexHtmlGz)
@@ -73,10 +79,12 @@ func InitIndex() {
 	faviconSvgGz = gz(faviconSvg)
 	faviconSvgGzEtag = etag(faviconSvgGz)
 
+	indexCss = min("text/css", indexCss)
 	indexCssEtag = etag(indexCss)
 	indexCssGz = gz(indexCss)
 	indexCssGzEtag = etag(indexCssGz)
 
+	indexJs = min("text/javascript", indexJs)
 	indexJsEtag = etag(indexJs)
 	indexJsGz = gz(indexJs)
 	indexJsGzEtag = etag(indexJsGz)
@@ -127,6 +135,25 @@ func addHeaders(hdr http.Header, contentType string) {
 	hdr.Add("Cache-Control", "max-age=3600, must-revalidate")
 }
 
+func min(t string, src []byte) []byte {
+	m := minify.New()
+	switch t {
+	case "text/css":
+		m.AddFunc(t, css.Minify)
+	case "text/html":
+		m.AddFunc(t, html.Minify)
+	case "text/javascript":
+		m.AddFunc(t, js.Minify)
+	default:
+		log.Fatalf("Unknown type %v", t)
+	}
+	b, err := m.Bytes(t, src)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return b
+}
+
 func gz(src []byte) []byte {
 	buf := new(bytes.Buffer)
 	if gz, err := gzip.NewWriterLevel(buf, gzip.BestCompression); err != nil {
@@ -141,7 +168,7 @@ func gz(src []byte) []byte {
 
 func etag(src []byte) string {
 	hasher := fnv.New128a()
-	if _, err := hasher.Write(indexHtml); err != nil {
+	if _, err := hasher.Write(src); err != nil {
 		log.Fatal(err)
 	}
 	return base64.URLEncoding.EncodeToString(hasher.Sum(nil))
