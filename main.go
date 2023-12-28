@@ -24,6 +24,7 @@ func main() {
 	config.Load()
 	slog.Info("📮 Initializing services...")
 	rest.InitIndex()
+	slog.Info("🗜️ Static web UI resources minified & compressed")
 	storage, err := storage.New()
 	if err != nil {
 		log.Fatal(err)
@@ -35,7 +36,7 @@ func main() {
 	srv := httpsrv.New(rest.New(storage, addMailSvc), sig)
 	shutdown := make(chan error)
 	go shutdownMonitor(sig, shutdown, storage, recv, srv)
-	slog.Info("⏻ Set up graceful shutdown monitor")
+	slog.Info("🔌 Set up graceful shutdown monitor")
 	out := make(chan<- error)
 	go startRecv(out, recv)
 	go startSrv(out, srv)
