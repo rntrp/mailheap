@@ -5,8 +5,8 @@ import "net/http"
 func addSecurityHeaders(hdr http.Header) {
 	hdr.Add("Content-Security-Policy", "default-src 'self'; "+
 		"img-src * data:; "+
-		"style-src 'self' 'unsafe-inline';"+
-		"frame-ancestors 'none';"+
+		"style-src 'self' 'unsafe-inline'; "+
+		"frame-ancestors 'none'; "+
 		"base-uri 'self';")
 	hdr.Add("Permissions-Policy", "accelerometer=(), "+
 		"ambient-light-sensor=(), "+
