@@ -69,6 +69,12 @@ type DeleteMailsResult struct {
 
 func (c *ctrl) DeleteMails(w http.ResponseWriter, r *http.Request) {
 	addSecurityHeaders(w.Header())
+	csrfTokenQuery := r.URL.Query().Get("csrf-token")
+	csrfTokenHeader := r.Header.Get("X-Csrf-Token")
+	if len(csrfTokenQuery) == 0 || csrfTokenQuery != csrfTokenHeader {
+		http.Error(w, "Invalid CSRF token", http.StatusForbidden)
+		return
+	}
 	var numDeleted int64
 	var err error
 	if idQuery, ok := r.URL.Query()["id"]; ok {
@@ -177,7 +183,12 @@ func parseLimit(query url.Values) int {
 
 func (c *ctrl) UploadMail(w http.ResponseWriter, r *http.Request) {
 	addSecurityHeaders(w.Header())
-	if !setupFileSizeChecks(w, r) {
+	csrfTokenQuery := r.URL.Query().Get("csrf-token")
+	csrfTokenHeader := r.Header.Get("X-Csrf-Token")
+	if len(csrfTokenQuery) == 0 || csrfTokenQuery != csrfTokenHeader {
+		http.Error(w, "Invalid CSRF token", http.StatusForbidden)
+		return
+	} else if !setupFileSizeChecks(w, r) {
 		return
 	}
 	maxMemory := coerceMemoryBufferSize(config.GetHTTPUploadMemoryBufferSize())

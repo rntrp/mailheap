@@ -204,15 +204,29 @@ function inlineImages(htmlString, attachments) {
   }
   return html.outerHTML;
 }
-async function uploadMail(eml) {
+async function uploadMail(event) {
+  if (!event.isTrusted) {
+    throw "Upload event is not trusted";
+  }
   const formData = new FormData();
-  formData.append("eml", eml);
-  await fetch("/upload", { method: "POST", body: formData });
+  formData.append("eml", event.target.files[0]);
+  const csrfToken = crypto.randomUUID();
+  await fetch("/upload?csrf-token=" + csrfToken, {
+    method: "POST",
+    headers: new Headers({ "X-Csrf-Token": csrfToken }),
+    body: formData,
+  });
   window.location.reload();
 }
-async function deleteAllMails() {
-  if (confirm("Delete all mails?")) {
-    await fetch("/mails", { method: "DELETE" });
+async function deleteAllMails(event) {
+  if (!event.isTrusted) {
+    throw "Delete event is not trusted";
+  } else if (confirm("Delete all mails?")) {
+    const csrfToken = crypto.randomUUID();
+    await fetch("/mails?csrf-token=" + csrfToken, {
+      method: "DELETE",
+      headers: new Headers({ "X-Csrf-Token": csrfToken }),
+    });
     window.location.reload();
     const previewHtml = document.getElementById("preview-html");
     previewHtml.classList.remove("hidden");
@@ -226,8 +240,7 @@ window.onload = async function () {
   document.querySelector("#list > div:first-child")?.focus();
 };
 document.getElementById("inbox").onclick = () => window.location.reload();
-document.getElementById("upload").onchange = async (e) =>
-  await uploadMail(e.target.files[0]);
+document.getElementById("upload").onchange = uploadMail;
 document.getElementById("uploadLink").onclick = () =>
   document.getElementById("upload").click();
 document.getElementById("delete").onclick = deleteAllMails;
