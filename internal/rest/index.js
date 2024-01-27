@@ -92,7 +92,7 @@ async function loadMails() {
   return result;
 }
 async function infiniteScroll() {
-  const list = document.getElementById("list");
+  const list = document.getElementById("mails");
   const last = list.lastElementChild?.clientHeight ?? 0;
   if (list.scrollTop + list.clientHeight + last >= list.scrollHeight) {
     const result = await loadMails();
@@ -102,10 +102,9 @@ async function infiniteScroll() {
   }
 }
 function addEmailToList(id, from, to, subject) {
-  const outer = document.createElement("div");
+  const outer = document.createElement("article");
   outer.id = id;
   outer.tabIndex = 8192;
-  outer.className = "mail-item";
   outer.onfocus = () => previewMail(id);
   const emailFromText = JSON.parse(from).join("; ");
   const emailFrom = document.createElement("h5");
@@ -125,7 +124,7 @@ function addEmailToList(id, from, to, subject) {
   info.appendChild(emailTo);
   info.appendChild(emailSubject);
   outer.appendChild(info);
-  document.getElementById("list").appendChild(outer);
+  document.getElementById("mails").appendChild(outer);
 }
 function fileAttachments(attachments) {
   while (files.length > 0) {
@@ -235,17 +234,17 @@ async function deleteAllMails(event) {
   }
 }
 window.onload = async function () {
-  document.getElementById("list").scrollTop = 0;
+  document.getElementById("mails").scrollTop = 0;
   await loadMails();
   document.querySelector("#list > div:first-child")?.focus();
 };
 document.getElementById("inbox").onclick = () => window.location.reload();
 document.getElementById("upload").onchange = uploadMail;
-document.getElementById("uploadLink").onclick = () =>
+document.getElementById("upload-link").onclick = () =>
   document.getElementById("upload").click();
 document.getElementById("delete").onclick = deleteAllMails;
-document.getElementById("showHtml").onclick = showHtml;
-document.getElementById("showPlain").onclick = showPlain;
-document.getElementById("showHeaders").onclick = showHeaders;
-document.getElementById("downloadEml").onclick = downloadEml;
-document.getElementById("list").onscrollend = infiniteScroll;
+document.getElementById("show-html").onclick = showHtml;
+document.getElementById("show-plain").onclick = showPlain;
+document.getElementById("show-headers").onclick = showHeaders;
+document.getElementById("download-eml").onclick = downloadEml;
+document.getElementById("mails").onscrollend = infiniteScroll;

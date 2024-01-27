@@ -10,53 +10,45 @@
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
-    <div id="layout" class="content">
-      <nav>
-        <ul class="menu-list">
-          <li class="menu-item">
-            <div id="logo">
-              <img src="favicon.svg" alt="Mailheap Logo" />
-              <span>Mailheap</span>
-            </div>
-          </li>
-          <li class="menu-item">
-            <a id="inbox" href="#" class="menu-link"
-              >📥 Inbox <span id="mail-count">(0)</span></a
-            >
-          </li>
-          <li class="menu-item">
-            <input
-              id="upload"
-              type="file"
-              accept=".eml,message/rfc822"
-              class="hidden"
-            /><a id="uploadLink" href="#" class="menu-link">🆙 Upload .eml</a>
-          </li>
-          <li class="menu-item">
-            <a id="delete" href="#" class="menu-link">❌ Delete all</a>
-          </li>
-        </ul>
-      </nav>
-      <div id="list"></div>
-      <div id="main">
-        <div class="mail-content-header">
-          <div>
-            <h3 id="preview-title" class="mail-content-title"></h3>
-            <p id="preview-subtitle" class="mail-content-subtitle"></p>
-          </div>
-          <div class="mail-content-controls">
-            <button id="showHtml">HTML</button>
-            <button id="showPlain">Plain</button>
-            <button id="showHeaders">Headers</button>
-            <button id="downloadEml">.eml</button>
-          </div>
+    <menu>
+      <li id="logo">
+        <img src="favicon.svg" alt="Mailheap Logo" />
+        <span>Mailheap</span>
+      </li>
+      <li>
+        <a id="inbox" href="#">Inbox<span id="mail-count">(0)</span></a>
+      </li>
+      <li>
+        <input
+          id="upload"
+          type="file"
+          accept=".eml,message/rfc822"
+          class="hidden"
+        /><a id="upload-link" href="#">Upload</a>
+      </li>
+      <li>
+        <a id="delete" href="#">Delete all</a>
+      </li>
+    </menu>
+    <nav id="mails"></nav>
+    <main>
+      <div class="mail-content-header">
+        <div>
+          <h3 id="preview-title" class="mail-content-title"></h3>
+          <p id="preview-subtitle" class="mail-content-subtitle"></p>
         </div>
-        <iframe id="preview-html" referrerpolicy="no-referrer" sandbox></iframe>
-        <pre id="preview-plain" class="hidden"></pre>
-        <pre id="preview-headers" class="hidden"></pre>
-        <div id="footer-attachments" class="hidden"></div>
+        <div class="mail-content-controls">
+          <button id="show-html">HTML</button>
+          <button id="show-plain">Plain</button>
+          <button id="show-headers">Headers</button>
+          <button id="download-eml">.eml</button>
+        </div>
       </div>
-    </div>
+      <iframe id="preview-html" referrerpolicy="no-referrer" sandbox></iframe>
+      <pre id="preview-plain" class="hidden"></pre>
+      <pre id="preview-headers" class="hidden"></pre>
+      <div id="footer-attachments" class="hidden"></div>
+    </main>
     <script type="text/javascript" src="index.js"></script>
     <script type="text/javascript" src="index.jsmimeparser.min.js"></script>
   </body>
