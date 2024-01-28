@@ -31,8 +31,8 @@
       </li>
     </menu>
     <nav id="mails"></nav>
-    <main>
-      <div class="mail-content-header">
+    <div class="mail">
+      <header class="mail-content-header">
         <div>
           <h3 id="preview-title" class="mail-content-title"></h3>
           <p id="preview-subtitle" class="mail-content-subtitle"></p>
@@ -43,12 +43,14 @@
           <button id="show-headers">Headers</button>
           <button id="download-eml">.eml</button>
         </div>
-      </div>
-      <iframe id="preview-html" referrerpolicy="no-referrer" sandbox></iframe>
-      <pre id="preview-plain" class="hidden"></pre>
-      <pre id="preview-headers" class="hidden"></pre>
-      <div id="footer-attachments" class="hidden"></div>
-    </main>
+      </header>
+      <main>
+        <iframe id="preview-html" referrerpolicy="no-referrer" sandbox></iframe>
+        <pre id="preview-plain" class="hidden"></pre>
+        <pre id="preview-headers" class="hidden"></pre>  
+      </main>
+      <footer id="attachments" class="hidden"></footer>
+    </div>
     <script type="text/javascript" src="index.js"></script>
     <script type="text/javascript" src="index.jsmimeparser.min.js"></script>
   </body>

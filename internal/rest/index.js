@@ -142,7 +142,7 @@ function fileAttachments(attachments) {
       });
     }
   }
-  const footer = document.getElementById("footer-attachments");
+  const footer = document.getElementById("attachments");
   footer.replaceChildren();
   footer.classList.add("hidden");
   if (files.length > 0) {
@@ -155,6 +155,7 @@ function fileAttachments(attachments) {
         return bytes + "\xa0B";
       }
     };
+    const ul = document.createElement("ul");
     for (const file of files) {
       const a = document.createElement("a");
       a.download = file.name;
@@ -163,14 +164,13 @@ function fileAttachments(attachments) {
       a.target = "_blank";
       a.textContent = file.name;
       const size = document.createElement("span");
-      size.classList.add("mail-attachment-size");
-      size.textContent = "\xa0(" + formatBytes(file.size) + ")";
-      const div = document.createElement("div");
-      div.classList.add("mail-attachment");
-      div.appendChild(a);
-      div.appendChild(size);
-      footer.appendChild(div);
+      size.textContent = "(" + formatBytes(file.size) + ")";
+      const li = document.createElement("li");
+      li.appendChild(a);
+      li.appendChild(size);
+      ul.appendChild(li);
     }
+    footer.appendChild(ul);
     footer.classList.remove("hidden");
   }
 }
@@ -236,7 +236,7 @@ async function deleteAllMails(event) {
 window.onload = async function () {
   document.getElementById("mails").scrollTop = 0;
   await loadMails();
-  document.querySelector("#list > div:first-child")?.focus();
+  document.querySelector("#mails > article:first-child")?.focus();
 };
 document.getElementById("inbox").onclick = () => window.location.reload();
 document.getElementById("upload").onchange = uploadMail;
