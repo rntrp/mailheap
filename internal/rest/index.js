@@ -131,7 +131,7 @@ function fileAttachments(attachments) {
     URL.revokeObjectURL(files.pop().blob);
   }
   for (const att of attachments) {
-    if (att && att.content && att.contentDisposition !== "inline") {
+    if (att && att.content) {
       files.push({
         blob: URL.createObjectURL(
           new Blob([att.content], { type: att.contentType })
