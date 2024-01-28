@@ -86,7 +86,7 @@ async function loadMails() {
   const result = await response.json();
   for (const mail of result.data) {
     lastId = mail.id;
-    addEmailToList(mail.id, mail.from, mail.to, mail.subject);
+    addEmailToList(mail.id, mail.from, mail.to, mail.subject, mail.created);
   }
   document.getElementById("mail-count").textContent = `(${result.total})`;
   return result;
@@ -101,30 +101,32 @@ async function infiniteScroll() {
     }
   }
 }
-function addEmailToList(id, from, to, subject) {
-  const outer = document.createElement("article");
-  outer.id = id;
-  outer.tabIndex = 8192;
-  outer.onfocus = () => previewMail(id);
+function addEmailToList(id, from, to, subject, inbound) {
+  const email = document.createElement("article");
+  email.id = id;
+  email.tabIndex = 8192;
+  email.onfocus = () => previewMail(id);
   const emailFromText = JSON.parse(from).join("; ");
-  const emailFrom = document.createElement("h5");
+  const emailFrom = document.createElement("address");
   emailFrom.className = "mail-from";
   emailFrom.textContent = emailFromText;
   emailFrom.title = emailFromText;
   const emailToText = JSON.parse(to).join("; ");
-  const emailTo = document.createElement("h5");
+  const emailTo = document.createElement("address");
   emailTo.className = "mail-to";
   emailTo.textContent = emailToText;
   emailTo.title = emailToText;
   const emailSubject = document.createElement("h4");
   emailSubject.className = "mail-subject";
   emailSubject.textContent = subject;
-  const info = document.createElement("div");
-  info.appendChild(emailFrom);
-  info.appendChild(emailTo);
-  info.appendChild(emailSubject);
-  outer.appendChild(info);
-  document.getElementById("mails").appendChild(outer);
+  const emailInbound = document.createElement("time");
+  emailInbound.className = "mail-inbound";
+  emailInbound.textContent = inbound ? new Date(inbound).toUTCString() : null;
+  email.appendChild(emailFrom);
+  email.appendChild(emailTo);
+  email.appendChild(emailSubject);
+  email.appendChild(emailInbound);
+  document.getElementById("mails").appendChild(email);
 }
 function fileAttachments(attachments) {
   while (files.length > 0) {

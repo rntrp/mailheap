@@ -45,7 +45,7 @@ menu > li > a {
 }
 
 menu > li > a > #mail-count {
-  color: #aaa;
+  color: #ddd;
   margin-left: 0.25rem;
 }
 
@@ -109,6 +109,9 @@ main {
 .mail-from,
 .mail-to {
   color: #999;
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: bold;
   margin: 0;
   overflow: hidden;
   text-transform: uppercase;
@@ -126,6 +129,16 @@ main {
   color: green;
   content: "▼";
   margin-right: 0.25rem;
+}
+
+.mail-inbound {
+  color: #999;
+  display: inline-block;
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: bold;
+  text-align: end;
+  width: 100%;
 }
 
 .mail-content-header {
