@@ -3,14 +3,14 @@ module github.com/rntrp/mailheap
 go 1.21
 
 require (
-	github.com/emersion/go-smtp v0.20.1
+	github.com/emersion/go-smtp v0.20.2
 	github.com/glebarez/sqlite v1.10.0
 	github.com/go-chi/chi/v5 v5.0.11
-	github.com/google/uuid v1.5.0
+	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/prometheus/client_golang v1.18.0
-	github.com/tdewolff/minify/v2 v2.20.14
-	gorm.io/gorm v1.25.5
+	github.com/tdewolff/minify/v2 v2.20.16
+	gorm.io/gorm v1.25.6
 )
 
 require (
@@ -26,10 +26,10 @@ require (
 	github.com/prometheus/common v0.46.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/tdewolff/parse/v2 v2.7.9 // indirect
+	github.com/tdewolff/parse/v2 v2.7.11 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
-	modernc.org/libc v1.40.5 // indirect
+	modernc.org/libc v1.40.10 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.7.2 // indirect
 	modernc.org/sqlite v1.28.0 // indirect
