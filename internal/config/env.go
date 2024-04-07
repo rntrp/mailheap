@@ -30,7 +30,6 @@ type values struct {
 	MAILHEAP_SMTP_MAX_RECIPIENTS            int64
 	MAILHEAP_SMTP_MAX_LINE_LENGTH           int64
 	MAILHEAP_SMTP_ALLOW_INSECURE_AUTH       bool
-	MAILHEAP_SMTP_DISABLE_AUTH              bool
 	MAILHEAP_SMTP_ENABLE_SMTPUTF8           bool
 	MAILHEAP_SMTP_ENABLE_LMTP               bool
 	MAILHEAP_SMTP_ENABLE_REQUIRETLS         bool
@@ -155,10 +154,6 @@ func GetSMTPMaxLineLength() int64 {
 
 func IsSMTPAllowInsecureAuth() bool {
 	return v.MAILHEAP_SMTP_ALLOW_INSECURE_AUTH
-}
-
-func IsSMTPDisableAuth() bool {
-	return v.MAILHEAP_SMTP_DISABLE_AUTH
 }
 
 func IsSMTPEnableSMTPUTF8() bool {

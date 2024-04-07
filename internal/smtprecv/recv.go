@@ -97,6 +97,5 @@ func Init(addMailSvc msg.StoreMailSvc) *smtp.Server {
 	s.EnableBINARYMIME = config.IsSMTPEnableBINARYMIME()
 	s.EnableDSN = config.IsSMTPEnableDSN()
 	s.EnableREQUIRETLS = config.IsSMTPEnableREQUIRETLS()
-	s.AuthDisabled = config.IsSMTPDisableAuth()
 	return s
 }
