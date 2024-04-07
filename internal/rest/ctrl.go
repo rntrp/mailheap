@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/rntrp/mailheap/internal/config"
 	"github.com/rntrp/mailheap/internal/model"
 	"github.com/rntrp/mailheap/internal/msg"
@@ -41,7 +40,7 @@ type ctrl struct {
 
 func (c *ctrl) GetEml(w http.ResponseWriter, r *http.Request) {
 	addSecurityHeaders(w.Header())
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, "numeric ID could not be parsed", http.StatusBadRequest)
 		return
@@ -121,7 +120,7 @@ type SeekMailsResult struct {
 
 func (c *ctrl) SeekMails(w http.ResponseWriter, r *http.Request) {
 	addSecurityHeaders(w.Header())
-	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, "numeric ID could not be parsed", http.StatusBadRequest)
 		return

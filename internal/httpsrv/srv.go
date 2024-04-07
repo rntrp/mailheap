@@ -4,36 +4,41 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httplog/v2"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rntrp/mailheap/internal/config"
 	"github.com/rntrp/mailheap/internal/rest"
 )
 
 func New(ctrl rest.Controller, shutdown chan os.Signal) *http.Server {
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Get("/", ctrl.Index)
-	r.Get("/index.html", ctrl.Index)
-	r.Get("/favicon.ico", ctrl.IndexFaviconIco)
-	r.Get("/favicon.svg", ctrl.IndexFaviconSvg)
-	r.Get("/index.css", ctrl.IndexCss)
-	r.Get("/index.js", ctrl.IndexJs)
-	r.Get("/index.jsmimeparser.min.js", ctrl.IndexJsMimeParser)
-	r.Get("/mail/{id}", ctrl.GetEml)
-	r.Delete("/mails", ctrl.DeleteMails)
-	r.Get("/mails/{id}", ctrl.SeekMails)
-	r.Post("/upload", ctrl.UploadMail)
-	r.Get("/health", rest.Live)
+	r := http.NewServeMux()
+	r.HandleFunc("GET /", ctrl.Index)
+	r.HandleFunc("GET /index.html", ctrl.Index)
+	r.HandleFunc("GET /favicon.ico", ctrl.IndexFaviconIco)
+	r.HandleFunc("GET /favicon.svg", ctrl.IndexFaviconSvg)
+	r.HandleFunc("GET /index.css", ctrl.IndexCss)
+	r.HandleFunc("GET /index.js", ctrl.IndexJs)
+	r.HandleFunc("GET /index.jsmimeparser.min.js", ctrl.IndexJsMimeParser)
+	r.HandleFunc("GET /mail/{id}", ctrl.GetEml)
+	r.HandleFunc("DELETE /mails", ctrl.DeleteMails)
+	r.HandleFunc("GET /mails/{id}", ctrl.SeekMails)
+	r.HandleFunc("POST /upload", ctrl.UploadMail)
+	r.HandleFunc("GET /health", rest.Live)
 	if config.IsHTTPEnablePrometheus() {
 		r.Handle("/metrics", promhttp.Handler())
 	}
 	if config.IsHTTPEnableShutdown() {
-		r.Post("/shutdown", shutdownFn(shutdown))
+		r.HandleFunc("POST /shutdown", shutdownFn(shutdown))
 	}
-	return &http.Server{Addr: config.GetHTTPTCPAddress(), Handler: r}
+	h := httplog.Handler(httplog.NewLogger("MAILHEAP", httplog.Options{
+		Concise:         true,
+		JSON:            false,
+		RequestHeaders:  false,
+		TimeFieldFormat: time.RFC3339,
+	}))(r)
+	return &http.Server{Addr: config.GetHTTPTCPAddress(), Handler: h}
 }
 
 func shutdownFn(sig chan os.Signal) func(http.ResponseWriter, *http.Request) {
