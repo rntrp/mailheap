@@ -88,7 +88,7 @@ func parseInt64(env string, def int64) int64 {
 }
 
 func parseDuration(env string, def time.Duration) time.Duration {
-	if d, err := time.ParseDuration(env); err == nil {
+	if d, err := time.ParseDuration(os.Getenv(env)); err == nil {
 		return d
 	}
 	return def
