@@ -100,6 +100,7 @@ header {
 
 main {
   flex: 1;
+  overflow: auto;
 }
 
 .mail-subject {
@@ -198,7 +199,13 @@ footer > ul > li > span {
 
 #preview-plain,
 #preview-headers {
+  max-height: 1vh;
   padding: 1rem;
+  white-space: pre-wrap;
+}
+
+#preview-headers {
+  word-break: break-all;
 }
 
 .hidden {
