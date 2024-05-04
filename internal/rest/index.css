@@ -194,6 +194,7 @@ footer > ul > li > span {
 
 #preview-html {
   height: 100%;
+  margin-bottom: -8px;
   width: 100%;
 }
 
