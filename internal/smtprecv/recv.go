@@ -46,7 +46,7 @@ func (s *session) AuthPlain(username, password string) error {
 }
 
 func (s *session) Mail(from string, opts *smtp.MailOptions) error {
-	if !s.auth {
+	if config.IsSMTPAuthRequired() && !s.auth {
 		return smtp.ErrAuthRequired
 	}
 	slog.Info("MAIL FROM", "session", s.uuid.String(), "from", from)
@@ -54,7 +54,7 @@ func (s *session) Mail(from string, opts *smtp.MailOptions) error {
 }
 
 func (s *session) Rcpt(to string, opts *smtp.RcptOptions) error {
-	if !s.auth {
+	if config.IsSMTPAuthRequired() && !s.auth {
 		return smtp.ErrAuthRequired
 	}
 	slog.Info("RCPT TO", "session", s.uuid.String(), "to", to)
@@ -62,7 +62,7 @@ func (s *session) Rcpt(to string, opts *smtp.RcptOptions) error {
 }
 
 func (s *session) Data(r io.Reader) error {
-	if !s.auth {
+	if config.IsSMTPAuthRequired() && !s.auth {
 		return smtp.ErrAuthRequired
 	}
 	slog.Info("DATA", "session", s.uuid.String())

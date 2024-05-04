@@ -19,6 +19,7 @@ type values struct {
 	MAILHEAP_HTTP_UPLOAD_MEMORY_BUFFER_SIZE int64
 	MAILHEAP_HTTP_ENABLE_PROMETHEUS         bool
 	MAILHEAP_HTTP_ENABLE_SHUTDOWN           bool
+	MAILHEAP_SMTP_AUTH_REQUIRED             bool
 	MAILHEAP_SMTP_USERNAME                  string
 	MAILHEAP_SMTP_PASSWORD                  string
 	MAILHEAP_SMTP_NETWORK_TYPE              string
@@ -110,6 +111,10 @@ func IsHTTPEnableShutdown() bool {
 
 func GetShutdownTimeout() time.Duration {
 	return v.MAILHEAP_SHUTDOWN_TIMEOUT
+}
+
+func IsSMTPAuthRequired() bool {
+	return v.MAILHEAP_SMTP_AUTH_REQUIRED
 }
 
 func GetSMTPUsername() string {
