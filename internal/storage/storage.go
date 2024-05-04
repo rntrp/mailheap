@@ -31,7 +31,7 @@ func New() (MailStorage, error) {
 	f, err := os.OpenFile(path, os.O_CREATE, 0600)
 	if err != nil {
 		return nil, err
-	} else if f.Close() != nil {
+	} else if err := f.Close(); err != nil {
 		slog.Warn("Closing db file failed:", "error", err.Error())
 	}
 	db, err := gorm.Open(sqlite.Open(path), new(gorm.Config))
