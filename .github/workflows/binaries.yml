@@ -27,7 +27,7 @@ jobs:
         if: ${{ matrix.go-os == 'windows' }}
         run: echo "BINARY_NAME=mailheap-${{ github.ref_name }}-${{ matrix.go-os }}-${{ matrix.go-arch }}.exe" >> $GITHUB_ENV
       - name: Go Build
-        run: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w" -o ${{ env.BINARY_NAME }}
+        run: GOOS=${{ matrix.go-os }} GOARCH=${{ matrix.go-arch }} go build -ldflags="-s -w -X 'github.com/rntrp/mailheap/internal/config.defaultEnv=production'" -o ${{ env.BINARY_NAME }}
       - name: Upload Asset
         # Note: "Settings > Actions > Workflow permissions > Read and write permissions" must be set
         uses: softprops/action-gh-release@v2

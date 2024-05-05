@@ -10,6 +10,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var defaultEnv = "development"
+
 func Load() {
 	// https://github.com/joho/godotenv#precedence--conventions
 	loadDotEnv()
@@ -33,7 +35,7 @@ func tryLoad(path, file string) {
 func loadDotEnv() {
 	v.MAILHEAP_ENV = os.Getenv("MAILHEAP_ENV")
 	if len(v.MAILHEAP_ENV) == 0 {
-		v.MAILHEAP_ENV = "development"
+		v.MAILHEAP_ENV = defaultEnv
 	}
 	v.MAILHEAP_ENV_DIR = os.Getenv("MAILHEAP_ENV_DIR")
 }
