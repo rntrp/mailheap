@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -44,6 +45,21 @@ func loadEnv() {
 	v.MAILHEAP_TEMP_DIR = parseString("MAILHEAP_TEMP_DIR", os.TempDir())
 	v.MAILHEAP_DB_LOCATION = parseString("MAILHEAP_DB_LOCATION", filepath.Join(os.TempDir(), "mailheap.db"))
 	v.MAILHEAP_SHUTDOWN_TIMEOUT = parseDuration("MAILHEAP_SHUTDOWN_TIMEOUT", 0)
+	v.MAILHEAP_LOG_SERVICE_NAME = parseString("MAILHEAP_LOG_SERVICE_NAME", "MAILHEAP")
+	v.MAILHEAP_LOG_LEVEL = parseString("MAILHEAP_LOG_LEVEL", "INFO")
+	v.MAILHEAP_LOG_LEVEL_FIELD_NAME = parseString("MAILHEAP_LOG_LEVEL_FIELD_NAME", "level")
+	v.MAILHEAP_LOG_MESSAGE_FIELD_NAME = parseString("MAILHEAP_LOG_MESSAGE_FIELD_NAME", "msg")
+	v.MAILHEAP_LOG_JSON = parseBool("MAILHEAP_LOG_JSON", false)
+	v.MAILHEAP_LOG_CONCISE = parseBool("MAILHEAP_LOG_CONCISE", false)
+	v.MAILHEAP_LOG_TAGS = parseMap("MAILHEAP_LOG_TAGS", nil)
+	v.MAILHEAP_LOG_REQUEST_HEADERS = parseBool("MAILHEAP_LOG_REQUEST_HEADERS", false)
+	v.MAILHEAP_LOG_HIDE_REQUEST_HEADERS = parseSlice("MAILHEAP_LOG_HIDE_REQUEST_HEADERS", nil)
+	v.MAILHEAP_LOG_RESPONSE_HEADERS = parseBool("MAILHEAP_LOG_RESPONSE_HEADERS", false)
+	v.MAILHEAP_LOG_QUIET_DOWN_ROUTES = parseSlice("MAILHEAP_LOG_QUIET_DOWN_ROUTES", nil)
+	v.MAILHEAP_LOG_QUIET_DOWN_PERIOD = parseDuration("MAILHEAP_LOG_QUIET_DOWN_PERIOD", 0)
+	v.MAILHEAP_LOG_TIME_FIELD_FORMAT = parseString("MAILHEAP_LOG_TIME_FIELD_FORMAT", time.RFC3339Nano)
+	v.MAILHEAP_LOG_TIME_FIELD_NAME = parseString("MAILHEAP_LOG_TIME_FIELD_NAME", "timestamp")
+	v.MAILHEAP_LOG_SOURCE_FIELD_NAME = parseString("MAILHEAP_LOG_SOURCE_FIELD_NAME", "")
 	v.MAILHEAP_HTTP_TCP_ADDRESS = parseString("MAILHEAP_HTTP_TCP_ADDRESS", ":8080")
 	v.MAILHEAP_HTTP_MAX_REQUEST_SIZE = parseInt64("MAILHEAP_HTTP_MAX_REQUEST_SIZE", -1)
 	v.MAILHEAP_HTTP_UPLOAD_MEMORY_BUFFER_SIZE = parseInt64("MAILHEAP_HTTP_UPLOAD_MEMORY_BUFFER_SIZE", 10<<20)
@@ -94,4 +110,30 @@ func parseDuration(env string, def time.Duration) time.Duration {
 		return d
 	}
 	return def
+}
+
+func parseSlice(env string, def []string) []string {
+	e := strings.TrimSpace(os.Getenv(env))
+	if len(e) == 0 {
+		return def
+	}
+	s := strings.Split(e, ",")
+	for i := range s {
+		s[i] = strings.TrimSpace(s[i])
+	}
+	return s
+}
+
+func parseMap(env string, def map[string]string) map[string]string {
+	e := strings.TrimSpace(os.Getenv(env))
+	if len(e) == 0 {
+		return def
+	}
+	s := strings.Split(e, ",")
+	m := make(map[string]string, len(s))
+	for _, kv := range s {
+		key, value, _ := strings.Cut(kv, "=")
+		m[strings.TrimSpace(key)] = strings.TrimSpace(value)
+	}
+	return m
 }

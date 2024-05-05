@@ -14,6 +14,21 @@ type values struct {
 	MAILHEAP_TEMP_DIR                       string
 	MAILHEAP_DB_LOCATION                    string
 	MAILHEAP_SHUTDOWN_TIMEOUT               time.Duration
+	MAILHEAP_LOG_SERVICE_NAME               string
+	MAILHEAP_LOG_LEVEL                      string
+	MAILHEAP_LOG_LEVEL_FIELD_NAME           string
+	MAILHEAP_LOG_MESSAGE_FIELD_NAME         string
+	MAILHEAP_LOG_JSON                       bool
+	MAILHEAP_LOG_CONCISE                    bool
+	MAILHEAP_LOG_TAGS                       map[string]string
+	MAILHEAP_LOG_REQUEST_HEADERS            bool
+	MAILHEAP_LOG_HIDE_REQUEST_HEADERS       []string
+	MAILHEAP_LOG_RESPONSE_HEADERS           bool
+	MAILHEAP_LOG_QUIET_DOWN_ROUTES          []string
+	MAILHEAP_LOG_QUIET_DOWN_PERIOD          time.Duration
+	MAILHEAP_LOG_TIME_FIELD_FORMAT          string
+	MAILHEAP_LOG_TIME_FIELD_NAME            string
+	MAILHEAP_LOG_SOURCE_FIELD_NAME          string
 	MAILHEAP_HTTP_TCP_ADDRESS               string
 	MAILHEAP_HTTP_MAX_REQUEST_SIZE          int64
 	MAILHEAP_HTTP_UPLOAD_MEMORY_BUFFER_SIZE int64
@@ -87,6 +102,66 @@ func GetTempDir() string {
 
 func GetDBLocation() string {
 	return v.MAILHEAP_DB_LOCATION
+}
+
+func GetLogServiceName() string {
+	return v.MAILHEAP_LOG_SERVICE_NAME
+}
+
+func GetLogLevel() string {
+	return v.MAILHEAP_LOG_LEVEL
+}
+
+func GetLogLevelFieldName() string {
+	return v.MAILHEAP_LOG_LEVEL_FIELD_NAME
+}
+
+func GetLogMessageFieldName() string {
+	return v.MAILHEAP_LOG_MESSAGE_FIELD_NAME
+}
+
+func IsLogJSON() bool {
+	return v.MAILHEAP_LOG_JSON
+}
+
+func IsLogConcise() bool {
+	return v.MAILHEAP_LOG_CONCISE
+}
+
+func GetLogTags() map[string]string {
+	return v.MAILHEAP_LOG_TAGS
+}
+
+func IsLogRequestHeaders() bool {
+	return v.MAILHEAP_LOG_REQUEST_HEADERS
+}
+
+func GetLogHideRequestHeaders() []string {
+	return v.MAILHEAP_LOG_HIDE_REQUEST_HEADERS
+}
+
+func IsLogResponseHeaders() bool {
+	return v.MAILHEAP_LOG_RESPONSE_HEADERS
+}
+
+func GetLogQuietDownRoutes() []string {
+	return v.MAILHEAP_LOG_QUIET_DOWN_ROUTES
+}
+
+func GetLogQuietDownPeriod() time.Duration {
+	return v.MAILHEAP_LOG_QUIET_DOWN_PERIOD
+}
+
+func GetLogTimeFieldFormat() string {
+	return v.MAILHEAP_LOG_TIME_FIELD_FORMAT
+}
+
+func GetLogTimeFieldName() string {
+	return v.MAILHEAP_LOG_TIME_FIELD_NAME
+}
+
+func GetLogSourceFieldName() string {
+	return v.MAILHEAP_LOG_SOURCE_FIELD_NAME
 }
 
 func GetHTTPTCPAddress() string {
