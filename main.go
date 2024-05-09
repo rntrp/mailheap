@@ -14,6 +14,7 @@ import (
 	"github.com/emersion/go-smtp"
 	"github.com/rntrp/mailheap/internal/config"
 	"github.com/rntrp/mailheap/internal/httpsrv"
+	"github.com/rntrp/mailheap/internal/logs"
 	"github.com/rntrp/mailheap/internal/msg"
 	"github.com/rntrp/mailheap/internal/rest"
 	"github.com/rntrp/mailheap/internal/smtprecv"
@@ -22,6 +23,7 @@ import (
 
 func main() {
 	config.Load()
+	slog.SetDefault(logs.Logger())
 	slog.Info("📮 Initializing services...")
 	rest.InitIndex()
 	slog.Info("🗜️ Static web UI resources minified & compressed")

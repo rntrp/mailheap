@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/go-chi/httplog/v2"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rntrp/mailheap/internal/config"
+	"github.com/rntrp/mailheap/internal/logs"
 	"github.com/rntrp/mailheap/internal/rest"
 )
 
@@ -31,26 +31,7 @@ func New(ctrl rest.Controller, shutdown chan os.Signal) *http.Server {
 	if config.IsHTTPEnableShutdown() {
 		r.HandleFunc("POST /shutdown", shutdownFn(shutdown))
 	}
-	return &http.Server{Addr: config.GetHTTPTCPAddress(), Handler: logged()(r)}
-}
-
-func logged() func(next http.Handler) http.Handler {
-	return httplog.Handler(httplog.NewLogger(config.GetLogServiceName(), httplog.Options{
-		LogLevel:           httplog.LevelByName(config.GetLogLevel()),
-		LevelFieldName:     config.GetLogLevelFieldName(),
-		MessageFieldName:   config.GetLogMessageFieldName(),
-		JSON:               config.IsLogJSON(),
-		Concise:            config.IsLogConcise(),
-		Tags:               config.GetLogTags(),
-		RequestHeaders:     config.IsLogRequestHeaders(),
-		HideRequestHeaders: config.GetLogHideRequestHeaders(),
-		ResponseHeaders:    config.IsLogResponseHeaders(),
-		QuietDownRoutes:    config.GetLogQuietDownRoutes(),
-		QuietDownPeriod:    config.GetLogQuietDownPeriod(),
-		TimeFieldFormat:    config.GetLogTimeFieldFormat(),
-		TimeFieldName:      config.GetLogTimeFieldName(),
-		SourceFieldName:    config.GetLogSourceFieldName(),
-	}))
+	return &http.Server{Addr: config.GetHTTPTCPAddress(), Handler: logs.Handler()(r)}
 }
 
 func shutdownFn(sig chan os.Signal) func(http.ResponseWriter, *http.Request) {
