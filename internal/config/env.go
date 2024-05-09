@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 	"time"
@@ -57,7 +58,7 @@ func (v *values) print() {
 		b := obfuscate(a, val.Field(i).Interface())
 		buf.WriteString(fmt.Sprintf("%-40s= %v\n", a, b))
 	}
-	fmt.Println(buf.String())
+	log.Println(buf.String())
 }
 
 func obfuscate(key string, value any) any {

@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -98,30 +97,4 @@ func parseDuration(env string, def time.Duration) time.Duration {
 		return d
 	}
 	return def
-}
-
-func parseSlice(env string, def []string) []string {
-	e := strings.TrimSpace(os.Getenv(env))
-	if len(e) == 0 {
-		return def
-	}
-	s := strings.Split(e, ",")
-	for i := range s {
-		s[i] = strings.TrimSpace(s[i])
-	}
-	return s
-}
-
-func parseMap(env string, def map[string]string) map[string]string {
-	e := strings.TrimSpace(os.Getenv(env))
-	if len(e) == 0 {
-		return def
-	}
-	s := strings.Split(e, ",")
-	m := make(map[string]string, len(s))
-	for _, kv := range s {
-		key, value, _ := strings.Cut(kv, "=")
-		m[strings.TrimSpace(key)] = strings.TrimSpace(value)
-	}
-	return m
 }
