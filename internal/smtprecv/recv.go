@@ -76,6 +76,12 @@ func (s *session) Rcpt(to string, opts *smtp.RcptOptions) error {
 	return nil
 }
 
+var invalidContent = &smtp.SMTPError{
+	Code:         554,
+	EnhancedCode: smtp.EnhancedCode{5, 6, 0},
+	Message:      "Invalid message content",
+}
+
 func (s *session) Data(r io.Reader) error {
 	if config.IsSMTPAuthRequired() && !s.auth {
 		return smtp.ErrAuthRequired
@@ -84,14 +90,16 @@ func (s *session) Data(r io.Reader) error {
 	slog.Info("SMTP command", "uuid", s.uuid.String(),
 		"command", "DATA")
 	d := &readerDecorator{delegate: r}
-	err := s.addMailSvc.StoreMail(d)
-	if d.err == nil {
-		elapsed := time.Since(start)
-		slog.Info("SMTP command", "uuid", s.uuid.String(),
-			"command", "<CR><LF>.<CR><LF>", "length", d.length,
-			"elapsed", elapsed)
+	if err := s.addMailSvc.StoreMail(d); err != nil {
+		slog.Error("SMTP: failed to store mail", "uuid", s.uuid,
+			"error", err.Error())
+		return invalidContent
 	}
-	return err
+	elapsed := time.Since(start)
+	slog.Info("SMTP command", "uuid", s.uuid.String(),
+		"command", "<CR><LF>.<CR><LF>", "length", d.length,
+		"elapsed", elapsed)
+	return nil
 }
 
 func (s *session) Reset() {

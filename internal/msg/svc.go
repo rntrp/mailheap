@@ -38,36 +38,36 @@ func readMail(r io.Reader) (model.Mail, error) {
 	m := model.Mail{}
 	b, err := io.ReadAll(r)
 	if err != nil {
-		return m, err
+		return m, fmt.Errorf("reading message failed: %w", err)
 	}
 	msg, err := mail.ReadMessage(bytes.NewReader(b))
 	if err != nil {
-		return m, err
+		return m, fmt.Errorf("parsing RFC 822 message failed: %w", err)
 	}
 	date, err := msg.Header.Date()
 	if err != nil {
-		return m, err
+		return m, fmt.Errorf("parsing 'Date' header failed: %w", err)
 	}
 	wd := new(mime.WordDecoder)
 	subject, err := wd.DecodeHeader(msg.Header.Get("Subject"))
 	if err != nil {
-		return m, err
+		return m, fmt.Errorf("parsing 'Subject' header failed: %w", err)
 	}
 	to, err := address2json(msg, "To")
 	if err != nil {
-		return m, err
+		return m, fmt.Errorf("parsing 'To' header failed: %w", err)
 	}
 	from, err := address2json(msg, "From")
 	if err != nil {
-		return m, err
+		return m, fmt.Errorf("parsing 'From' header failed: %w", err)
 	}
 	cc, err := address2json(msg, "Cc")
 	if err != nil {
-		return m, err
+		return m, fmt.Errorf("parsing 'Cc' header failed: %w", err)
 	}
 	bcc, err := address2json(msg, "Bcc")
 	if err != nil {
-		return m, err
+		return m, fmt.Errorf("parsing 'Bcc' header failed: %w", err)
 	}
 	m.Created = time.Now()
 	m.Date = date

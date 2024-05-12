@@ -204,7 +204,7 @@ func (c *ctrl) UploadMail(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 	if err := c.storeMail.StoreMail(f); err != nil {
-		slog.Error("Store mail failed", "error", err.Error())
+		slog.Error("HTTP: failed to store mail", "error", err.Error())
 		http.Error(w, "eml could not be stored", http.StatusBadRequest)
 	}
 }
