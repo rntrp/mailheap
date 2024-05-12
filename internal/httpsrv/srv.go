@@ -7,7 +7,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rntrp/mailheap/internal/config"
-	"github.com/rntrp/mailheap/internal/logs"
 	"github.com/rntrp/mailheap/internal/rest"
 )
 
@@ -31,7 +30,7 @@ func New(ctrl rest.Controller, shutdown chan os.Signal) *http.Server {
 	if config.IsHTTPEnableShutdown() {
 		r.HandleFunc("POST /shutdown", shutdownFn(shutdown))
 	}
-	return &http.Server{Addr: config.GetHTTPTCPAddress(), Handler: logs.Handler()(r)}
+	return &http.Server{Addr: config.GetHTTPTCPAddress(), Handler: logged()(r)}
 }
 
 func shutdownFn(sig chan os.Signal) func(http.ResponseWriter, *http.Request) {

@@ -1,21 +1,26 @@
-package logs
+package httpsrv
 
 import (
-	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
 
-func Handler() func(next http.Handler) http.Handler {
+func logged() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
-			msg := fmt.Sprintf("Request: %s %s", r.Method, r.URL.Path)
+			uuid := uuid.NewString()
+			slog.Info("HTTP request", "uuid", uuid, "method", r.Method,
+				"url", r.URL, "protocol", r.Proto, "host", r.Host,
+				"remote", r.RemoteAddr, "length", r.ContentLength)
 			d := &rwDecorator{delegate: w, status: http.StatusOK}
 			defer func() {
 				elapsed := time.Since(start)
-				slog.Info(msg, "status", d.status, "length", d.length, "elapsed", elapsed)
+				slog.Info("HTTP response", "uuid", uuid, "status", d.status,
+					"length", d.length, "elapsed", elapsed)
 			}()
 			next.ServeHTTP(d, r)
 		})

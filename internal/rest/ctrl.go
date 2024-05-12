@@ -3,7 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"math"
 	"net/http"
 	"net/url"
@@ -47,7 +47,7 @@ func (c *ctrl) GetEml(w http.ResponseWriter, r *http.Request) {
 	}
 	eml, err := c.storage.GetMime(id)
 	if err != nil {
-		log.Println(err)
+		slog.Error("Get mail failed", "error", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError)
 		return
@@ -96,11 +96,11 @@ func (c *ctrl) DeleteMails(w http.ResponseWriter, r *http.Request) {
 		numDeleted, err = c.storage.DeleteAllMails()
 	}
 	if err != nil {
-		log.Println(err)
+		slog.Error("Delete mail failed", "error", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError)
 	} else if b, err := json.Marshal(DeleteMailsResult{NumDeleted: numDeleted}); err != nil {
-		log.Println(err)
+		slog.Error("Marshalling delete mail result failed", "error", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError)
 	} else {
@@ -129,7 +129,7 @@ func (c *ctrl) SeekMails(w http.ResponseWriter, r *http.Request) {
 	}
 	total, err := c.storage.CountMails()
 	if err != nil {
-		log.Println(err)
+		slog.Error("Counting mails failed", "error", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError)
 		return
@@ -137,7 +137,7 @@ func (c *ctrl) SeekMails(w http.ResponseWriter, r *http.Request) {
 	limit := parseLimit(r.URL.Query())
 	mails, err := c.storage.SeekMails(id, limit)
 	if err != nil {
-		log.Println(err)
+		slog.Error("Seeking mails failed", "error", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError)
 		return
@@ -149,7 +149,7 @@ func (c *ctrl) SeekMails(w http.ResponseWriter, r *http.Request) {
 		Size:  len(mails),
 		Data:  mails})
 	if err != nil {
-		log.Println(err)
+		slog.Error("Marshalling seek mails result failed", "error", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError)
 		return
@@ -204,7 +204,7 @@ func (c *ctrl) UploadMail(w http.ResponseWriter, r *http.Request) {
 	}
 	defer f.Close()
 	if err := c.storeMail.StoreMail(f); err != nil {
-		log.Println(err)
+		slog.Error("Store mail failed", "error", err.Error())
 		http.Error(w, "eml could not be stored", http.StatusBadRequest)
 	}
 }

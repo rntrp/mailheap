@@ -3,6 +3,7 @@ package smtprecv
 import (
 	"io"
 	"log/slog"
+	"time"
 
 	"github.com/emersion/go-smtp"
 	"github.com/google/uuid"
@@ -42,6 +43,8 @@ func (s *session) AuthPlain(username, password string) error {
 		return smtp.ErrAuthFailed
 	}
 	s.auth = true
+	slog.Info("SMTP command", "uuid", s.uuid.String(),
+		"command", "AUTH PLAIN", "user", username)
 	return nil
 }
 
@@ -49,7 +52,17 @@ func (s *session) Mail(from string, opts *smtp.MailOptions) error {
 	if config.IsSMTPAuthRequired() && !s.auth {
 		return smtp.ErrAuthRequired
 	}
-	slog.Info("MAIL FROM", "session", s.uuid.String(), "from", from)
+	mode := "US-ASCII"
+	if opts.UTF8 {
+		mode = "SMTPUTF8"
+	}
+	body := smtp.Body7Bit
+	if len(opts.Body) > 0 {
+		body = opts.Body
+	}
+	slog.Info("SMTP command", "uuid", s.uuid.String(),
+		"command", "MAIL FROM", "from", from, "body", body,
+		"mode", mode, "size", opts.Size, "envelope", opts.EnvelopeID)
 	return nil
 }
 
@@ -57,7 +70,9 @@ func (s *session) Rcpt(to string, opts *smtp.RcptOptions) error {
 	if config.IsSMTPAuthRequired() && !s.auth {
 		return smtp.ErrAuthRequired
 	}
-	slog.Info("RCPT TO", "session", s.uuid.String(), "to", to)
+	slog.Info("SMTP command", "uuid", s.uuid.String(),
+		"command", "RCPT TO", "to", to, "type", opts.OriginalRecipientType,
+		"recipient", opts.OriginalRecipient)
 	return nil
 }
 
@@ -65,16 +80,26 @@ func (s *session) Data(r io.Reader) error {
 	if config.IsSMTPAuthRequired() && !s.auth {
 		return smtp.ErrAuthRequired
 	}
-	slog.Info("DATA", "session", s.uuid.String())
-	return s.addMailSvc.StoreMail(r)
+	start := time.Now()
+	slog.Info("SMTP command", "uuid", s.uuid.String(),
+		"command", "DATA")
+	d := &readerDecorator{delegate: r}
+	err := s.addMailSvc.StoreMail(d)
+	if d.err == nil {
+		elapsed := time.Since(start)
+		slog.Info("SMTP command", "uuid", s.uuid.String(),
+			"command", "<CR><LF>.<CR><LF>", "length", d.length,
+			"elapsed", elapsed)
+	}
+	return err
 }
 
 func (s *session) Reset() {
-	slog.Info("RSET", "session", s.uuid.String())
+	slog.Info("SMTP command", "uuid", s.uuid.String(), "command", "RSET")
 }
 
 func (s *session) Logout() error {
-	slog.Info("QUIT", "session", s.uuid.String())
+	slog.Info("SMTP command", "uuid", s.uuid.String(), "command", "QUIT")
 	return nil
 }
 
