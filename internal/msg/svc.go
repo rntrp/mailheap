@@ -90,7 +90,7 @@ func address2json(msg *mail.Message, hdr string) (string, error) {
 		return "", err
 	}
 	s := make([]string, len(list))
-	for i := 0; i < len(list); i++ {
+	for i := range list {
 		if len(list[i].Name) == 0 {
 			s[i] = list[i].Address
 		} else {

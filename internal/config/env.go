@@ -53,7 +53,7 @@ func (v *values) print() {
 	val := reflect.Indirect(reflect.ValueOf(v))
 	valType := val.Type()
 	valNumField := val.NumField()
-	for i := 0; i < valNumField; i++ {
+	for i := range valNumField {
 		a := valType.Field(i).Name
 		b := obfuscate(a, val.Field(i).Interface())
 		buf.WriteString(fmt.Sprintf("%-40s= %v\n", a, b))
